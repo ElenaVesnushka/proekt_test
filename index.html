@@ -7,25 +7,27 @@
   <style>
     :root {
       color-scheme: light dark;
-      --bg: #f3f7ff;
-      --card: #ffffff;
-      --text: #1f2a44;
-      --muted: #5f6b84;
-      --accent: #4b7bec;
-      --accent-2: #2f5fd8;
-      --border: #d9e3ff;
-      --shadow: 0 10px 30px rgba(16, 34, 75, 0.12);
+      --bg: #eef9f1;
+      --bg-soft: #e3f1ff;
+      --card: #fffdf6;
+      --text: #203238;
+      --muted: #53707c;
+      --accent: #ff8f6b;
+      --accent-2: #ff7043;
+      --border: #cde5d4;
+      --shadow: 0 10px 30px rgba(45, 83, 73, 0.14);
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0f172a;
-        --card: #111c35;
-        --text: #e5ecff;
-        --muted: #a8b6d9;
-        --accent: #79a4ff;
-        --accent-2: #5c8eff;
-        --border: #26395f;
+        --bg: #101b1a;
+        --bg-soft: #1a2837;
+        --card: #162425;
+        --text: #e8f8ed;
+        --muted: #a8c5b8;
+        --accent: #ffb088;
+        --accent-2: #ff9972;
+        --border: #2f4a46;
         --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       }
     }
@@ -37,7 +39,7 @@
     body {
       margin: 0;
       font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-      background: linear-gradient(160deg, var(--bg), #dce9ff 140%);
+      background: linear-gradient(145deg, var(--bg), var(--bg-soft) 55%, #fff3cf 120%);
       color: var(--text);
       min-height: 100vh;
     }
@@ -116,6 +118,7 @@
     .panel h2 {
       margin: 0 0 8px;
       font-size: 1.1rem;
+      color: var(--accent-2);
     }
 
     .panel p {
@@ -179,6 +182,11 @@
           <h2>Праздник или памятная дата</h2>
           <p id="holidayText">Загрузка...</p>
         </article>
+
+        <article class="panel card">
+          <h2>Шуточное, но заботливое напоминание</h2>
+          <p id="reminderText">Сейчас подберу совет по погоде...</p>
+        </article>
       </div>
     </section>
   </main>
@@ -192,6 +200,7 @@
     const weatherBox = document.getElementById("weatherBox");
     const horoscopeText = document.getElementById("horoscopeText");
     const holidayText = document.getElementById("holidayText");
+    const reminderText = document.getElementById("reminderText");
 
     const formatter = new Intl.DateTimeFormat("ru-RU", {
       weekday: "long",
@@ -337,6 +346,34 @@
       }
     }
 
+    function buildCareReminder(daily) {
+      const maxToday = Math.round(daily.temperature_2m_max[0]);
+      const maxTomorrow = Math.round(daily.temperature_2m_max[1] ?? daily.temperature_2m_max[0]);
+      const rainToday = Number(daily.precipitation_sum[0]) || 0;
+      const rainTomorrow = Number(daily.precipitation_sum[1]) || 0;
+      const windToday = Number(daily.windspeed_10m_max[0]) || 0;
+      const codes = [daily.weather_code[0], daily.weather_code[1]];
+
+      const isRainy = rainToday > 1.2 || rainTomorrow > 1.2 || codes.some((code) => [61, 63, 65, 80, 95].includes(code));
+      const isWindy = windToday >= 28;
+      const isCold = maxToday <= 8;
+      const isHot = maxToday >= 27 || maxTomorrow >= 27;
+
+      if (isRainy) {
+        return "Сегодня зонт важнее мотивации: и тот, и другой лучше не забывать. Береги ноги сухими и настроение легким.";
+      }
+      if (isWindy) {
+        return "Ветер бодрый: прическа может уйти в свободное плавание. Надень что-то непродуваемое и держись уверенно.";
+      }
+      if (isCold) {
+        return "Прохладно: чай в термосе почти как суперсила. Одевайся слоями и не геройствуй без шапки.";
+      }
+      if (isHot) {
+        return "Почти лето: солнце щедрое, как бабушка на обед. Вода, головной убор и короткие паузы в тени будут кстати.";
+      }
+      return "Погода дружелюбная: можно идти покорять день без лишней драмы. Возьми воду и сделай маленькую прогулку для настроения.";
+    }
+
     async function updateAll() {
       const city = cityInput.value.trim();
       if (!city) {
@@ -352,10 +389,12 @@
         const forecast = await fetchForecast(geo.latitude, geo.longitude, geo.timezone);
         cityLabel.textContent = "Город: " + geo.name + (geo.country ? ", " + geo.country : "");
         renderWeather(forecast.daily);
+        reminderText.textContent = buildCareReminder(forecast.daily);
         await loadHoliday(geo.country_code || "RU");
         statusEl.textContent = "Данные обновлены.";
       } catch (err) {
         statusEl.textContent = err.message || "Произошла ошибка при загрузке данных.";
+        reminderText.textContent = "Не получилось получить прогноз. На всякий случай: возьми воду, легкую куртку и улыбку.";
       }
     }
 
