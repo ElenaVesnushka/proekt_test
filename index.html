@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Погода на сегодня и завтра</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f3f7ff;
+      --card: #ffffff;
+      --text: #1f2a44;
+      --muted: #5f6b84;
+      --accent: #4b7bec;
+      --accent-2: #2f5fd8;
+      --border: #d9e3ff;
+      --shadow: 0 10px 30px rgba(16, 34, 75, 0.12);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #111c35;
+        --text: #e5ecff;
+        --muted: #a8b6d9;
+        --accent: #79a4ff;
+        --accent-2: #5c8eff;
+        --border: #26395f;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(160deg, var(--bg), #dce9ff 140%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 28px 16px 36px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.6rem, 3vw, 2rem);
+    }
+
+    .date-text {
+      color: var(--muted);
+      margin: 0 0 18px;
+      font-size: 0.98rem;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    input, button, select {
+      font: inherit;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    input:focus, button:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(75, 123, 236, 0.16);
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: var(--accent-2);
+    }
+
+    .status {
+      min-height: 1.4em;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .grid {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .panel p {
+      margin: 0.35rem 0;
+      line-height: 1.45;
+    }
+
+    .weather-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: 7px;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>Прогноз погоды на сегодня и завтра</h1>
+      <p id="currentDate" class="date-text"></p>
+
+      <div class="controls">
+        <input id="cityInput" list="cityList" placeholder="Введите город, например Москва" value="Москва">
+        <button id="loadBtn" type="button">Показать прогноз</button>
+      </div>
+      <datalist id="cityList">
+        <option value="Москва"></option>
+        <option value="Санкт-Петербург"></option>
+        <option value="Казань"></option>
+        <option value="Новосибирск"></option>
+        <option value="Екатеринбург"></option>
+        <option value="Минск"></option>
+        <option value="Алматы"></option>
+      </datalist>
+
+      <p id="status" class="status"></p>
+
+      <div class="grid">
+        <article class="panel card">
+          <h2>Погода</h2>
+          <p id="cityLabel">Город: -</p>
+          <div id="weatherBox"></div>
+          <p class="footer-note">Источник данных: Open-Meteo (реальный API).</p>
+        </article>
+
+        <article class="panel card">
+          <h2>Краткий гороскоп</h2>
+          <p id="horoscopeText">Загрузка...</p>
+        </article>
+
+        <article class="panel card">
+          <h2>Праздник или памятная дата</h2>
+          <p id="holidayText">Загрузка...</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const dateEl = document.getElementById("currentDate");
+    const cityInput = document.getElementById("cityInput");
+    const loadBtn = document.getElementById("loadBtn");
+    const statusEl = document.getElementById("status");
+    const cityLabel = document.getElementById("cityLabel");
+    const weatherBox = document.getElementById("weatherBox");
+    const horoscopeText = document.getElementById("horoscopeText");
+    const holidayText = document.getElementById("holidayText");
+
+    const formatter = new Intl.DateTimeFormat("ru-RU", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+
+    const today = new Date();
+    dateEl.textContent = "Сегодня: " + formatter.format(today);
+
+    const dailyHoroscope = [
+      "День подходит для спокойного планирования и небольших, но уверенных шагов вперед.",
+      "Хорошее время для общения: короткий разговор сегодня может принести полезную идею завтра.",
+      "Сфокусируйтесь на главном и не перегружайте себя лишними задачами, так результат будет лучше.",
+      "Полезно завершить давние мелкие дела: они освободят место для новых возможностей.",
+      "День благоприятен для обучения и новых знаний, особенно в практических вопросах.",
+      "Поддержка близких и позитивный настрой помогут быстрее решить текущие вопросы.",
+      "Стоит немного замедлиться, восстановить силы и наметить приоритеты на следующую неделю."
+    ];
+
+    horoscopeText.textContent = dailyHoroscope[today.getDay() === 0 ? 6 : today.getDay() - 1];
+
+    const memorableDates = {
+      "01-01": "Новый год",
+      "01-07": "Рождество Христово (православное)",
+      "02-23": "День защитника Отечества",
+      "03-08": "Международный женский день",
+      "04-12": "День космонавтики",
+      "05-01": "Праздник Весны и Труда",
+      "05-09": "День Победы",
+      "06-12": "День России",
+      "11-04": "День народного единства",
+      "12-31": "Канун Нового года"
+    };
+
+    function weatherCodeToText(code) {
+      const map = {
+        0: "Ясно",
+        1: "Преимущественно ясно",
+        2: "Переменная облачность",
+        3: "Пасмурно",
+        45: "Туман",
+        48: "Туман с инеем",
+        51: "Слабая морось",
+        53: "Морось",
+        55: "Сильная морось",
+        61: "Слабый дождь",
+        63: "Дождь",
+        65: "Сильный дождь",
+        71: "Слабый снег",
+        73: "Снег",
+        75: "Сильный снег",
+        80: "Ливневый дождь",
+        95: "Гроза"
+      };
+      return map[code] ?? "Неизвестно";
+    }
+
+    function formatISODate(isoDate) {
+      return new Intl.DateTimeFormat("ru-RU", {
+        weekday: "short",
+        day: "numeric",
+        month: "short"
+      }).format(new Date(isoDate));
+    }
+
+    async function loadHoliday(country = "RU") {
+      const y = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      const localKey = month + "-" + day;
+
+      try {
+        const url = "https://date.nager.at/api/v3/PublicHolidays/" + y + "/" + country;
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error("Holiday API error");
+        }
+        const holidays = await res.json();
+        const hit = holidays.find((h) => h.date === y + "-" + month + "-" + day);
+        if (hit) {
+          holidayText.textContent = hit.localName + " (" + country + ")";
+          return;
+        }
+      } catch (e) {
+        // Fallback ниже сработает автоматически.
+      }
+
+      if (memorableDates[localKey]) {
+        holidayText.textContent = memorableDates[localKey];
+      } else {
+        holidayText.textContent = "Сегодня нет крупного официального праздника. Отличный день для личных достижений.";
+      }
+    }
+
+    async function geocodeCity(city) {
+      const params = new URLSearchParams({
+        name: city,
+        count: "1",
+        language: "ru",
+        format: "json"
+      });
+      const res = await fetch("https://geocoding-api.open-meteo.com/v1/search?" + params.toString());
+      if (!res.ok) {
+        throw new Error("Не удалось получить координаты города");
+      }
+      const data = await res.json();
+      if (!data.results || data.results.length === 0) {
+        throw new Error("Город не найден");
+      }
+      return data.results[0];
+    }
+
+    async function fetchForecast(lat, lon, timezone) {
+      const params = new URLSearchParams({
+        latitude: String(lat),
+        longitude: String(lon),
+        daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max",
+        timezone: timezone || "auto",
+        forecast_days: "2"
+      });
+      const res = await fetch("https://api.open-meteo.com/v1/forecast?" + params.toString());
+      if (!res.ok) {
+        throw new Error("Не удалось получить прогноз погоды");
+      }
+      return res.json();
+    }
+
+    function renderWeather(daily) {
+      weatherBox.innerHTML = "";
+      for (let i = 0; i < daily.time.length; i += 1) {
+        const line = document.createElement("div");
+        line.className = "weather-line";
+        line.innerHTML =
+          "<strong>" + formatISODate(daily.time[i]) + "</strong>" +
+          "<span>" + weatherCodeToText(daily.weather_code[i]) + ", " +
+          Math.round(daily.temperature_2m_min[i]) + "..." +
+          Math.round(daily.temperature_2m_max[i]) + "°C, " +
+          "осадки: " + daily.precipitation_sum[i] + " мм, " +
+          "ветер: " + daily.windspeed_10m_max[i] + " км/ч</span>";
+        weatherBox.appendChild(line);
+      }
+    }
+
+    async function updateAll() {
+      const city = cityInput.value.trim();
+      if (!city) {
+        statusEl.textContent = "Введите название города.";
+        return;
+      }
+
+      statusEl.textContent = "Загружаю данные...";
+      weatherBox.innerHTML = "";
+
+      try {
+        const geo = await geocodeCity(city);
+        const forecast = await fetchForecast(geo.latitude, geo.longitude, geo.timezone);
+        cityLabel.textContent = "Город: " + geo.name + (geo.country ? ", " + geo.country : "");
+        renderWeather(forecast.daily);
+        await loadHoliday(geo.country_code || "RU");
+        statusEl.textContent = "Данные обновлены.";
+      } catch (err) {
+        statusEl.textContent = err.message || "Произошла ошибка при загрузке данных.";
+      }
+    }
+
+    loadBtn.addEventListener("click", updateAll);
+    cityInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        updateAll();
+      }
+    });
+
+    updateAll();
+  </script>
+</body>
+</html>
