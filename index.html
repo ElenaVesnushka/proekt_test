@@ -32,6 +32,50 @@
       }
     }
 
+    body[data-season="spring"] {
+      --bg: #eef9f1;
+      --bg-soft: #e3f1ff;
+      --card: #fffdf6;
+      --text: #203238;
+      --muted: #53707c;
+      --accent: #ff8f6b;
+      --accent-2: #ff7043;
+      --border: #cde5d4;
+    }
+
+    body[data-season="summer"] {
+      --bg: #ecfbff;
+      --bg-soft: #dff9df;
+      --card: #fffcf0;
+      --text: #1c2f35;
+      --muted: #4f6e73;
+      --accent: #ffad33;
+      --accent-2: #ff9800;
+      --border: #cbe7e1;
+    }
+
+    body[data-season="autumn"] {
+      --bg: #fff3e7;
+      --bg-soft: #ffe4cf;
+      --card: #fffaf5;
+      --text: #3a2c21;
+      --muted: #7a5f49;
+      --accent: #f08a24;
+      --accent-2: #db6e00;
+      --border: #f1d3b4;
+    }
+
+    body[data-season="winter"] {
+      --bg: #eaf2ff;
+      --bg-soft: #dce8f7;
+      --card: #f7fbff;
+      --text: #1f2d45;
+      --muted: #597191;
+      --accent: #6da9ff;
+      --accent-2: #3e8cff;
+      --border: #c8d9ef;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -71,9 +115,13 @@
 
     .controls {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr auto auto;
       gap: 10px;
       margin-bottom: 14px;
+    }
+
+    .season-select {
+      min-width: 170px;
     }
 
     input, button, select {
@@ -141,9 +189,61 @@
       color: var(--muted);
       font-size: 0.9rem;
     }
+
+    .season-art {
+      width: 100%;
+      height: 170px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2));
+      overflow: hidden;
+    }
+
+    .season-art .branch-sway {
+      transform-origin: 22px 142px;
+      animation: branchSway 7s ease-in-out infinite;
+    }
+
+    .season-art .decor-group {
+      transform-origin: 230px 68px;
+      animation: decorBreathe 5.5s ease-in-out infinite;
+    }
+
+    .season-art .decor-group.decor-snow {
+      animation-name: snowShimmer;
+      transform-origin: 240px 68px;
+    }
+
+    @keyframes branchSway {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(0.65deg); }
+    }
+
+    @keyframes decorBreathe {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-2.5px) rotate(0.35deg); }
+    }
+
+    @keyframes snowShimmer {
+      0%, 100% { transform: translateY(0); opacity: 0.92; }
+      50% { transform: translateY(1.5px); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .season-art .branch-sway,
+      .season-art .decor-group {
+        animation: none !important;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
-<body>
+<body data-season="spring">
   <main class="wrap">
     <section class="card">
       <h1>Прогноз погоды на сегодня и завтра</h1>
@@ -151,6 +251,13 @@
 
       <div class="controls">
         <input id="cityInput" list="cityList" placeholder="Введите город, например Москва" value="Москва">
+        <select id="seasonSelect" class="season-select" aria-label="Тема сезона">
+          <option value="auto">Тема: авто</option>
+          <option value="spring">Весна</option>
+          <option value="summer">Лето</option>
+          <option value="autumn">Осень</option>
+          <option value="winter">Зима</option>
+        </select>
         <button id="loadBtn" type="button">Показать прогноз</button>
       </div>
       <datalist id="cityList">
@@ -187,6 +294,12 @@
           <h2>Шуточное, но заботливое напоминание</h2>
           <p id="reminderText">Сейчас подберу совет по погоде...</p>
         </article>
+
+        <article class="panel card">
+          <h2>Ветка сезона</h2>
+          <p id="seasonLabel">Подбираю иллюстрацию по времени года...</p>
+          <svg id="seasonBranch" class="season-art" viewBox="0 0 400 180" role="img" aria-label="Иллюстрация ветки дерева"></svg>
+        </article>
       </div>
     </section>
   </main>
@@ -195,12 +308,15 @@
     const dateEl = document.getElementById("currentDate");
     const cityInput = document.getElementById("cityInput");
     const loadBtn = document.getElementById("loadBtn");
+    const seasonSelect = document.getElementById("seasonSelect");
     const statusEl = document.getElementById("status");
     const cityLabel = document.getElementById("cityLabel");
     const weatherBox = document.getElementById("weatherBox");
     const horoscopeText = document.getElementById("horoscopeText");
     const holidayText = document.getElementById("holidayText");
     const reminderText = document.getElementById("reminderText");
+    const seasonLabel = document.getElementById("seasonLabel");
+    const seasonBranch = document.getElementById("seasonBranch");
 
     const formatter = new Intl.DateTimeFormat("ru-RU", {
       weekday: "long",
@@ -211,6 +327,13 @@
 
     const today = new Date();
     dateEl.textContent = "Сегодня: " + formatter.format(today);
+
+    const seasonNames = {
+      spring: "Весна",
+      summer: "Лето",
+      autumn: "Осень",
+      winter: "Зима"
+    };
 
     const dailyHoroscope = [
       "День подходит для спокойного планирования и небольших, но уверенных шагов вперед.",
@@ -266,6 +389,87 @@
         day: "numeric",
         month: "short"
       }).format(new Date(isoDate));
+    }
+
+    function getSeasonByMonth(monthIndex) {
+      if (monthIndex >= 2 && monthIndex <= 4) return "spring";
+      if (monthIndex >= 5 && monthIndex <= 7) return "summer";
+      if (monthIndex >= 8 && monthIndex <= 10) return "autumn";
+      return "winter";
+    }
+
+    function renderBranchArt(season) {
+      let decor = "";
+      let caption = "";
+      let decorClass = "decor-group";
+
+      if (season === "spring") {
+        decor = `
+          <circle cx="140" cy="70" r="13" fill="#ffc6d8" />
+          <circle cx="170" cy="55" r="12" fill="#ffbdd1" />
+          <circle cx="205" cy="75" r="14" fill="#ffd2e0" />
+          <circle cx="250" cy="62" r="12" fill="#ffc4d4" />
+          <circle cx="290" cy="78" r="12" fill="#ffcfdf" />
+          <circle cx="325" cy="60" r="11" fill="#ffd7e5" />
+        `;
+        caption = "Весна: ветка в нежном цветении.";
+      } else if (season === "summer") {
+        decor = `
+          <ellipse cx="145" cy="70" rx="18" ry="12" fill="#79c96e" />
+          <ellipse cx="180" cy="58" rx="20" ry="13" fill="#6ebf61" />
+          <ellipse cx="220" cy="78" rx="19" ry="12" fill="#86d679" />
+          <ellipse cx="265" cy="62" rx="18" ry="12" fill="#70c866" />
+          <ellipse cx="305" cy="80" rx="19" ry="12" fill="#7ccf71" />
+          <ellipse cx="338" cy="62" rx="16" ry="11" fill="#68bb5d" />
+        `;
+        caption = "Лето: густая зеленая листва.";
+      } else if (season === "autumn") {
+        decor = `
+          <ellipse cx="145" cy="70" rx="17" ry="11" fill="#f4a440" />
+          <ellipse cx="178" cy="57" rx="19" ry="12" fill="#e48c2a" />
+          <ellipse cx="220" cy="78" rx="18" ry="11" fill="#f7b35e" />
+          <ellipse cx="264" cy="63" rx="18" ry="11" fill="#d9771f" />
+          <ellipse cx="304" cy="80" rx="18" ry="11" fill="#f1a347" />
+          <ellipse cx="338" cy="61" rx="16" ry="10" fill="#cc6815" />
+        `;
+        caption = "Осень: ветка в теплых янтарных оттенках.";
+      } else {
+        decorClass = "decor-group decor-snow";
+        decor = `
+          <circle cx="145" cy="70" r="8" fill="#f5fbff" stroke="#c2d8ef" />
+          <circle cx="175" cy="58" r="8" fill="#f8fdff" stroke="#c2d8ef" />
+          <circle cx="210" cy="78" r="8" fill="#f6fbff" stroke="#c2d8ef" />
+          <circle cx="255" cy="63" r="8" fill="#f7fcff" stroke="#c2d8ef" />
+          <circle cx="295" cy="80" r="8" fill="#f9fdff" stroke="#c2d8ef" />
+          <circle cx="330" cy="62" r="8" fill="#f3f9ff" stroke="#c2d8ef" />
+        `;
+        caption = "Зима: ветка под легким снежным покровом.";
+      }
+
+      seasonBranch.innerHTML = `
+        <defs>
+          <linearGradient id="skyGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.7)" />
+            <stop offset="100%" stop-color="rgba(255,255,255,0.15)" />
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="400" height="180" fill="url(#skyGrad)"></rect>
+        <g class="branch-sway">
+          <path d="M20 140 C90 120, 160 108, 230 100 C280 95, 340 82, 390 55" stroke="#6f4e37" stroke-width="11" fill="none" stroke-linecap="round"/>
+          <path d="M175 108 C165 80, 156 58, 145 44" stroke="#6f4e37" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M235 100 C228 80, 221 64, 210 50" stroke="#6f4e37" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M285 90 C283 72, 280 56, 274 42" stroke="#6f4e37" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <g class="${decorClass}">${decor}</g>
+        </g>
+      `;
+      seasonLabel.textContent = caption;
+    }
+
+    function applySeasonTheme() {
+      const selected = seasonSelect.value;
+      const finalSeason = selected === "auto" ? getSeasonByMonth(today.getMonth()) : selected;
+      document.body.dataset.season = finalSeason;
+      renderBranchArt(finalSeason);
     }
 
     async function loadHoliday(country = "RU") {
@@ -399,12 +603,14 @@
     }
 
     loadBtn.addEventListener("click", updateAll);
+    seasonSelect.addEventListener("change", applySeasonTheme);
     cityInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         updateAll();
       }
     });
 
+    applySeasonTheme();
     updateAll();
   </script>
 </body>
