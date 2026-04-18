@@ -398,70 +398,210 @@
       return "winter";
     }
 
+    function sakuraFlower(x, y, scale) {
+      const s = scale;
+      return (
+        "<g transform=\"translate(" + x + "," + y + ") scale(" + s + ")\">" +
+        "<g fill=\"#ffb8d0\">" +
+        "<ellipse cx=\"0\" cy=\"-7\" rx=\"3.4\" ry=\"6.8\" />" +
+        "<ellipse cx=\"0\" cy=\"-7\" rx=\"3.4\" ry=\"6.8\" transform=\"rotate(72)\" />" +
+        "<ellipse cx=\"0\" cy=\"-7\" rx=\"3.4\" ry=\"6.8\" transform=\"rotate(144)\" />" +
+        "<ellipse cx=\"0\" cy=\"-7\" rx=\"3.4\" ry=\"6.8\" transform=\"rotate(216)\" />" +
+        "<ellipse cx=\"0\" cy=\"-7\" rx=\"3.4\" ry=\"6.8\" transform=\"rotate(288)\" />" +
+        "</g>" +
+        "<circle r=\"3\" fill=\"#fff5f9\" />" +
+        "</g>"
+      );
+    }
+
+    function sakuraBud(x, y) {
+      return (
+        "<ellipse cx=\"" + x + "\" cy=\"" + y + "\" rx=\"4\" ry=\"6\" fill=\"#ff9ec4\" transform=\"rotate(-25 " + x + " " + y + ")\" />"
+      );
+    }
+
+    function cherryLeaf(x, y, rot) {
+      return (
+        "<g transform=\"translate(" + x + "," + y + ") rotate(" + rot + ")\">" +
+        "<ellipse cx=\"0\" cy=\"0\" rx=\"14\" ry=\"8\" fill=\"#4a9f4a\" />" +
+        "<path d=\"M 0 -8 Q 0 0 0 10\" stroke=\"#2d6b2d\" stroke-width=\"1.2\" fill=\"none\" />" +
+        "</g>"
+      );
+    }
+
+    function cherryPair(x, y) {
+      return (
+        "<g transform=\"translate(" + x + "," + y + ")\">" +
+        "<path d=\"M 0 -4 Q 3 -14 10 -10\" stroke=\"#5c4033\" stroke-width=\"1.4\" fill=\"none\" stroke-linecap=\"round\" />" +
+        "<ellipse cx=\"2\" cy=\"2\" rx=\"5.5\" ry=\"6.5\" fill=\"#c41e3a\" />" +
+        "<ellipse cx=\"11\" cy=\"5\" rx=\"5.5\" ry=\"6.5\" fill=\"#a01830\" />" +
+        "<ellipse cx=\"2\" cy=\"2\" rx=\"2\" ry=\"2.5\" fill=\"#ff6b7a\" opacity=\"0.35\" />" +
+        "</g>"
+      );
+    }
+
+    function mapleLeafPath(fill) {
+      return (
+        "<path d=\"M 0 10 L 4 -2 L 12 -8 L 10 2 L 16 8 L 6 10 L 0 18 L -6 10 L -16 8 L -10 2 L -12 -8 L -4 -2 Z\" fill=\"" +
+        fill +
+        "\" stroke=\"#8a3a12\" stroke-width=\"0.4\" stroke-linejoin=\"round\" />"
+      );
+    }
+
+    function mapleLeaf(x, y, rot, scale, fill) {
+      return (
+        "<g transform=\"translate(" + x + "," + y + ") rotate(" + rot + ") scale(" + scale + ")\">" +
+        mapleLeafPath(fill) +
+        "<path d=\"M 0 10 L 0 22\" stroke=\"#5a3010\" stroke-width=\"1.2\" />" +
+        "</g>"
+      );
+    }
+
+    function spruceNeedle(x, y, ang, len) {
+      const rad = (ang * Math.PI) / 180;
+      const x2 = x + Math.cos(rad) * len;
+      const y2 = y + Math.sin(rad) * len;
+      return (
+        "<polygon points=\"" +
+        x +
+        "," +
+        y +
+        " " +
+        x2 +
+        "," +
+        y2 +
+        " " +
+        (x + Math.cos(rad + 0.35) * (len * 0.45)) +
+        "," +
+        (y + Math.sin(rad + 0.35) * (len * 0.45)) +
+        "\" fill=\"#1a5c34\" />"
+      );
+    }
+
+    function snowCap(x, y, w) {
+      return (
+        "<ellipse cx=\"" +
+        x +
+        "\" cy=\"" +
+        y +
+        "\" rx=\"" +
+        w +
+        "\" ry=\"" +
+        w * 0.55 +
+        "\" fill=\"#f8fcff\" stroke=\"#d4e8f7\" stroke-width=\"0.6\" />"
+      );
+    }
+
     function renderBranchArt(season) {
-      let decor = "";
       let caption = "";
-      let decorClass = "decor-group";
+      let scene = "";
 
       if (season === "spring") {
-        decor = `
-          <circle cx="140" cy="70" r="13" fill="#ffc6d8" />
-          <circle cx="170" cy="55" r="12" fill="#ffbdd1" />
-          <circle cx="205" cy="75" r="14" fill="#ffd2e0" />
-          <circle cx="250" cy="62" r="12" fill="#ffc4d4" />
-          <circle cx="290" cy="78" r="12" fill="#ffcfdf" />
-          <circle cx="325" cy="60" r="11" fill="#ffd7e5" />
-        `;
-        caption = "Весна: ветка в нежном цветении.";
+        caption = "Весна: ветка цветущей сакуры.";
+        scene =
+          "<g class=\"branch-sway\">" +
+          "<path d=\"M 16 150 C 90 115, 170 95, 248 78 C 300 66, 350 52, 388 38\" stroke=\"#5c4033\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 178 108 C 170 82, 158 58, 148 36\" stroke=\"#6b4a3a\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 238 98 C 230 72, 218 48, 205 28\" stroke=\"#6b4a3a\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 292 86 C 286 64, 278 44, 268 24\" stroke=\"#6b4a3a\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<g class=\"decor-group\">" +
+          sakuraFlower(148, 40, 1.05) +
+          sakuraFlower(208, 52, 0.9) +
+          sakuraFlower(268, 58, 1) +
+          sakuraFlower(318, 48, 0.85) +
+          sakuraFlower(355, 42, 0.75) +
+          sakuraBud(128, 118) +
+          sakuraBud(185, 95) +
+          sakuraBud(330, 62) +
+          "</g>" +
+          "</g>";
       } else if (season === "summer") {
-        decor = `
-          <ellipse cx="145" cy="70" rx="18" ry="12" fill="#79c96e" />
-          <ellipse cx="180" cy="58" rx="20" ry="13" fill="#6ebf61" />
-          <ellipse cx="220" cy="78" rx="19" ry="12" fill="#86d679" />
-          <ellipse cx="265" cy="62" rx="18" ry="12" fill="#70c866" />
-          <ellipse cx="305" cy="80" rx="19" ry="12" fill="#7ccf71" />
-          <ellipse cx="338" cy="62" rx="16" ry="11" fill="#68bb5d" />
-        `;
-        caption = "Лето: густая зеленая листва.";
+        caption = "Лето: ветка черешни с листьями и ягодами.";
+        scene =
+          "<g class=\"branch-sway\">" +
+          "<path d=\"M 14 152 C 95 118, 175 98, 255 82 C 310 72, 360 58, 392 48\" stroke=\"#5a3828\" stroke-width=\"11\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 182 110 C 172 85, 162 62, 152 44\" stroke=\"#6b4a3a\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 248 96 C 240 72, 228 52, 218 34\" stroke=\"#6b4a3a\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 302 84 C 296 64, 288 46, 278 30\" stroke=\"#6b4a3a\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<g class=\"decor-group\">" +
+          cherryLeaf(138, 108, -35) +
+          cherryLeaf(165, 88, 15) +
+          cherryLeaf(200, 72, -55) +
+          cherryLeaf(235, 78, 40) +
+          cherryLeaf(275, 68, -20) +
+          cherryLeaf(310, 62, 25) +
+          cherryLeaf(345, 58, -45) +
+          cherryPair(158, 52) +
+          cherryPair(228, 58) +
+          cherryPair(298, 48) +
+          cherryPair(352, 44) +
+          "</g>" +
+          "</g>";
       } else if (season === "autumn") {
-        decor = `
-          <ellipse cx="145" cy="70" rx="17" ry="11" fill="#f4a440" />
-          <ellipse cx="178" cy="57" rx="19" ry="12" fill="#e48c2a" />
-          <ellipse cx="220" cy="78" rx="18" ry="11" fill="#f7b35e" />
-          <ellipse cx="264" cy="63" rx="18" ry="11" fill="#d9771f" />
-          <ellipse cx="304" cy="80" rx="18" ry="11" fill="#f1a347" />
-          <ellipse cx="338" cy="61" rx="16" ry="10" fill="#cc6815" />
-        `;
-        caption = "Осень: ветка в теплых янтарных оттенках.";
+        caption = "Осень: кленовая ветка.";
+        scene =
+          "<g class=\"branch-sway\">" +
+          "<path d=\"M 18 148 C 92 118, 168 100, 242 84 C 295 74, 348 60, 386 46\" stroke=\"#5c4033\" stroke-width=\"10\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 176 108 C 168 82, 158 58, 150 40\" stroke=\"#6b4a3a\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 238 96 C 230 72, 220 50, 210 32\" stroke=\"#6b4a3a\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<path d=\"M 290 86 C 284 66, 276 48, 268 30\" stroke=\"#6b4a3a\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\" />" +
+          "<g class=\"decor-group\">" +
+          mapleLeaf(142, 100, -25, 0.85, "#e85d04") +
+          mapleLeaf(178, 78, 40, 0.95, "#d9480f") +
+          mapleLeaf(218, 88, -50, 0.9, "#f4a261") +
+          mapleLeaf(258, 72, 15, 1, "#c2410c") +
+          mapleLeaf(298, 68, -35, 0.88, "#ea580c") +
+          mapleLeaf(332, 58, 55, 0.82, "#9a3412") +
+          mapleLeaf(365, 52, -15, 0.75, "#f59e0b") +
+          "</g>" +
+          "</g>";
       } else {
-        decorClass = "decor-group decor-snow";
-        decor = `
-          <circle cx="145" cy="70" r="8" fill="#f5fbff" stroke="#c2d8ef" />
-          <circle cx="175" cy="58" r="8" fill="#f8fdff" stroke="#c2d8ef" />
-          <circle cx="210" cy="78" r="8" fill="#f6fbff" stroke="#c2d8ef" />
-          <circle cx="255" cy="63" r="8" fill="#f7fcff" stroke="#c2d8ef" />
-          <circle cx="295" cy="80" r="8" fill="#f9fdff" stroke="#c2d8ef" />
-          <circle cx="330" cy="62" r="8" fill="#f3f9ff" stroke="#c2d8ef" />
-        `;
-        caption = "Зима: ветка под легким снежным покровом.";
+        caption = "Зима: еловая ветка под снегом.";
+        scene =
+          "<g class=\"branch-sway\">" +
+          "<path d=\"M 22 158 C 75 125, 130 95, 185 72 C 240 52, 300 38, 368 28\" stroke=\"#4a3224\" stroke-width=\"8\" fill=\"none\" stroke-linecap=\"round\" />" +
+          spruceNeedle(95, 128, -118, 38) +
+          spruceNeedle(110, 118, -112, 42) +
+          spruceNeedle(145, 102, -108, 44) +
+          spruceNeedle(175, 88, -102, 46) +
+          spruceNeedle(210, 76, -98, 48) +
+          spruceNeedle(248, 64, -95, 50) +
+          spruceNeedle(288, 52, -92, 48) +
+          spruceNeedle(325, 44, -88, 46) +
+          spruceNeedle(355, 36, -85, 42) +
+          "<g class=\"decor-group decor-snow\">" +
+          snowCap(95, 118, 14) +
+          snowCap(145, 95, 15) +
+          snowCap(210, 68, 16) +
+          snowCap(275, 52, 15) +
+          snowCap(335, 38, 14) +
+          "<circle cx=\"118\" cy=\"108\" r=\"3\" fill=\"#eef8ff\" opacity=\"0.9\" />" +
+          "<circle cx=\"232\" cy=\"70\" r=\"2.5\" fill=\"#eef8ff\" opacity=\"0.85\" />" +
+          "<circle cx=\"308\" cy=\"48\" r=\"3\" fill=\"#ffffff\" opacity=\"0.9\" />" +
+          "</g>" +
+          "</g>";
       }
 
-      seasonBranch.innerHTML = `
-        <defs>
-          <linearGradient id="skyGrad" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="rgba(255,255,255,0.7)" />
-            <stop offset="100%" stop-color="rgba(255,255,255,0.15)" />
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="400" height="180" fill="url(#skyGrad)"></rect>
-        <g class="branch-sway">
-          <path d="M20 140 C90 120, 160 108, 230 100 C280 95, 340 82, 390 55" stroke="#6f4e37" stroke-width="11" fill="none" stroke-linecap="round"/>
-          <path d="M175 108 C165 80, 156 58, 145 44" stroke="#6f4e37" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <path d="M235 100 C228 80, 221 64, 210 50" stroke="#6f4e37" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <path d="M285 90 C283 72, 280 56, 274 42" stroke="#6f4e37" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <g class="${decorClass}">${decor}</g>
-        </g>
-      `;
+      seasonBranch.setAttribute(
+        "aria-label",
+        season === "spring"
+          ? "Нарисованная ветка цветущей сакуры"
+          : season === "summer"
+            ? "Нарисованная ветка черешни с ягодами"
+            : season === "autumn"
+              ? "Нарисованная кленовая ветка"
+              : "Нарисованная еловая ветка в снегу"
+      );
+
+      seasonBranch.innerHTML =
+        "<defs>" +
+        "<linearGradient id=\"skyGrad\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"1\">" +
+        "<stop offset=\"0%\" stop-color=\"rgba(255,255,255,0.75)\" />" +
+        "<stop offset=\"100%\" stop-color=\"rgba(255,255,255,0.12)\" />" +
+        "</linearGradient>" +
+        "</defs>" +
+        "<rect x=\"0\" y=\"0\" width=\"400\" height=\"180\" fill=\"url(#skyGrad)\"></rect>" +
+        scene;
       seasonLabel.textContent = caption;
     }
 
