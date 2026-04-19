@@ -3,28 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Погода на сегодня и завтра</title>
+  <title>Погода — день и настроение</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="theme.css">
 </head>
-<body data-season="spring">
+<body data-season="spring" data-month="1">
   <main class="wrap">
-    <section class="card">
-      <h1>Прогноз погоды на сегодня и завтра</h1>
+    <section class="card hero-card">
+      <h1>Погода и день</h1>
       <p id="currentDate" class="date-text"></p>
 
       <div class="controls">
-        <input id="cityInput" list="cityList" placeholder="Введите город, например Москва" value="Москва">
-        <select id="seasonSelect" class="season-select" aria-label="Тема сезона">
-          <option value="auto">Тема: авто</option>
+        <input id="cityInput" list="cityList" placeholder="Город, например Москва" value="Москва" autocomplete="address-level2">
+        <input id="dateInput" class="date-input" type="date" aria-label="Дата для прогноза и настроения" title="Дата">
+        <select id="seasonSelect" class="season-select" aria-label="Тема оформления">
+          <option value="auto">Тема: по месяцу даты</option>
           <option value="spring">Весна</option>
           <option value="summer">Лето</option>
           <option value="autumn">Осень</option>
           <option value="winter">Зима</option>
         </select>
-        <button id="loadBtn" type="button">Показать прогноз</button>
+        <button id="loadBtn" type="button">Обновить прогноз</button>
       </div>
       <datalist id="cityList">
         <option value="Москва"></option>
@@ -38,27 +39,33 @@
 
       <p id="status" class="status"></p>
 
-      <div class="grid">
+      <p id="weatherSummary" class="weather-summary" aria-live="polite"></p>
+
+      <div class="panels-grid">
         <article class="panel card">
           <h2>Погода</h2>
-          <p id="cityLabel">Город: -</p>
+          <p id="cityLabel">Город: —</p>
           <div id="weatherBox"></div>
-          <p class="footer-note">Источник данных: Open-Meteo (реальный API).</p>
+          <p class="footer-note">Прогноз: Open-Meteo. Сегодня — оперативный прогноз; прошлые дни — архив reanalysis.</p>
         </article>
 
         <article class="panel card">
-          <h2>Краткий гороскоп</h2>
-          <p id="horoscopeText">Загрузка...</p>
+          <h2>Настроение дня</h2>
+          <p id="dayMoodText" class="flow-text">…</p>
+          <p class="footer-note">Без знаков зодиака — общий совет и ритм дня.</p>
         </article>
 
         <article class="panel card">
-          <h2>Праздник или памятная дата</h2>
-          <p id="holidayText">Загрузка...</p>
+          <h2>Праздник / памятная дата</h2>
+          <p id="holidayText" class="flow-text holiday-title">…</p>
+          <p id="holidayMeta" class="holiday-tier" hidden></p>
+          <p id="holidayNote" class="holiday-note flow-text"></p>
+          <p id="holidayExtras" class="holiday-extras" hidden></p>
         </article>
 
-        <article class="panel card">
-          <h2>Шуточное, но заботливое напоминание</h2>
-          <p id="reminderText">Сейчас подберу совет по погоде...</p>
+        <article class="panel card reminder-strip" id="reminderBlock" aria-live="polite">
+          <h2>Шуточно-заботливое напоминание</h2>
+          <p id="reminderText" class="flow-text reminder-body">…</p>
         </article>
       </div>
     </section>
@@ -69,237 +76,8 @@
     Архив погоды
   </a>
 
-  <script>
-    const dateEl = document.getElementById("currentDate");
-    const cityInput = document.getElementById("cityInput");
-    const loadBtn = document.getElementById("loadBtn");
-    const seasonSelect = document.getElementById("seasonSelect");
-    const statusEl = document.getElementById("status");
-    const cityLabel = document.getElementById("cityLabel");
-    const weatherBox = document.getElementById("weatherBox");
-    const horoscopeText = document.getElementById("horoscopeText");
-    const holidayText = document.getElementById("holidayText");
-    const reminderText = document.getElementById("reminderText");
-
-    const formatter = new Intl.DateTimeFormat("ru-RU", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-
-    const today = new Date();
-    dateEl.textContent = "Сегодня: " + formatter.format(today);
-
-    const dailyHoroscope = [
-      "День подходит для спокойного планирования и небольших, но уверенных шагов вперед.",
-      "Хорошее время для общения: короткий разговор сегодня может принести полезную идею завтра.",
-      "Сфокусируйтесь на главном и не перегружайте себя лишними задачами, так результат будет лучше.",
-      "Полезно завершить давние мелкие дела: они освободят место для новых возможностей.",
-      "День благоприятен для обучения и новых знаний, особенно в практических вопросах.",
-      "Поддержка близких и позитивный настрой помогут быстрее решить текущие вопросы.",
-      "Стоит немного замедлиться, восстановить силы и наметить приоритеты на следующую неделю."
-    ];
-
-    horoscopeText.textContent = dailyHoroscope[today.getDay() === 0 ? 6 : today.getDay() - 1];
-
-    const memorableDates = {
-      "01-01": "Новый год",
-      "01-07": "Рождество Христово (православное)",
-      "02-23": "День защитника Отечества",
-      "03-08": "Международный женский день",
-      "04-12": "День космонавтики",
-      "05-01": "Праздник Весны и Труда",
-      "05-09": "День Победы",
-      "06-12": "День России",
-      "11-04": "День народного единства",
-      "12-31": "Канун Нового года"
-    };
-
-    function weatherCodeToText(code) {
-      const map = {
-        0: "Ясно",
-        1: "Преимущественно ясно",
-        2: "Переменная облачность",
-        3: "Пасмурно",
-        45: "Туман",
-        48: "Туман с инеем",
-        51: "Слабая морось",
-        53: "Морось",
-        55: "Сильная морось",
-        61: "Слабый дождь",
-        63: "Дождь",
-        65: "Сильный дождь",
-        71: "Слабый снег",
-        73: "Снег",
-        75: "Сильный снег",
-        80: "Ливневый дождь",
-        95: "Гроза"
-      };
-      return map[code] ?? "Неизвестно";
-    }
-
-    function formatISODate(isoDate) {
-      return new Intl.DateTimeFormat("ru-RU", {
-        weekday: "short",
-        day: "numeric",
-        month: "short"
-      }).format(new Date(isoDate));
-    }
-
-    function getSeasonByMonth(monthIndex) {
-      if (monthIndex >= 2 && monthIndex <= 4) return "spring";
-      if (monthIndex >= 5 && monthIndex <= 7) return "summer";
-      if (monthIndex >= 8 && monthIndex <= 10) return "autumn";
-      return "winter";
-    }
-
-    function applySeasonTheme() {
-      const selected = seasonSelect.value;
-      const finalSeason = selected === "auto" ? getSeasonByMonth(today.getMonth()) : selected;
-      document.body.dataset.season = finalSeason;
-    }
-
-    async function loadHoliday(country = "RU") {
-      const y = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
-      const localKey = month + "-" + day;
-
-      try {
-        const url = "https://date.nager.at/api/v3/PublicHolidays/" + y + "/" + country;
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error("Holiday API error");
-        }
-        const holidays = await res.json();
-        const hit = holidays.find((h) => h.date === y + "-" + month + "-" + day);
-        if (hit) {
-          holidayText.textContent = hit.localName + " (" + country + ")";
-          return;
-        }
-      } catch (e) {
-        // Fallback ниже сработает автоматически.
-      }
-
-      if (memorableDates[localKey]) {
-        holidayText.textContent = memorableDates[localKey];
-      } else {
-        holidayText.textContent = "Сегодня нет крупного официального праздника. Отличный день для личных достижений.";
-      }
-    }
-
-    async function geocodeCity(city) {
-      const params = new URLSearchParams({
-        name: city,
-        count: "1",
-        language: "ru",
-        format: "json"
-      });
-      const res = await fetch("https://geocoding-api.open-meteo.com/v1/search?" + params.toString());
-      if (!res.ok) {
-        throw new Error("Не удалось получить координаты города");
-      }
-      const data = await res.json();
-      if (!data.results || data.results.length === 0) {
-        throw new Error("Город не найден");
-      }
-      return data.results[0];
-    }
-
-    async function fetchForecast(lat, lon, timezone) {
-      const params = new URLSearchParams({
-        latitude: String(lat),
-        longitude: String(lon),
-        daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max",
-        timezone: timezone || "auto",
-        forecast_days: "2"
-      });
-      const res = await fetch("https://api.open-meteo.com/v1/forecast?" + params.toString());
-      if (!res.ok) {
-        throw new Error("Не удалось получить прогноз погоды");
-      }
-      return res.json();
-    }
-
-    function renderWeather(daily) {
-      weatherBox.innerHTML = "";
-      for (let i = 0; i < daily.time.length; i += 1) {
-        const line = document.createElement("div");
-        line.className = "weather-line";
-        line.innerHTML =
-          "<strong>" + formatISODate(daily.time[i]) + "</strong>" +
-          "<span>" + weatherCodeToText(daily.weather_code[i]) + ", " +
-          Math.round(daily.temperature_2m_min[i]) + "..." +
-          Math.round(daily.temperature_2m_max[i]) + "°C, " +
-          "осадки: " + daily.precipitation_sum[i] + " мм, " +
-          "ветер: " + daily.windspeed_10m_max[i] + " км/ч</span>";
-        weatherBox.appendChild(line);
-      }
-    }
-
-    function buildCareReminder(daily) {
-      const maxToday = Math.round(daily.temperature_2m_max[0]);
-      const maxTomorrow = Math.round(daily.temperature_2m_max[1] ?? daily.temperature_2m_max[0]);
-      const rainToday = Number(daily.precipitation_sum[0]) || 0;
-      const rainTomorrow = Number(daily.precipitation_sum[1]) || 0;
-      const windToday = Number(daily.windspeed_10m_max[0]) || 0;
-      const codes = [daily.weather_code[0], daily.weather_code[1]];
-
-      const isRainy = rainToday > 1.2 || rainTomorrow > 1.2 || codes.some((code) => [61, 63, 65, 80, 95].includes(code));
-      const isWindy = windToday >= 28;
-      const isCold = maxToday <= 8;
-      const isHot = maxToday >= 27 || maxTomorrow >= 27;
-
-      if (isRainy) {
-        return "Сегодня зонт важнее мотивации: и тот, и другой лучше не забывать. Береги ноги сухими и настроение легким.";
-      }
-      if (isWindy) {
-        return "Ветер бодрый: прическа может уйти в свободное плавание. Надень что-то непродуваемое и держись уверенно.";
-      }
-      if (isCold) {
-        return "Прохладно: чай в термосе почти как суперсила. Одевайся слоями и не геройствуй без шапки.";
-      }
-      if (isHot) {
-        return "Почти лето: солнце щедрое, как бабушка на обед. Вода, головной убор и короткие паузы в тени будут кстати.";
-      }
-      return "Погода дружелюбная: можно идти покорять день без лишней драмы. Возьми воду и сделай маленькую прогулку для настроения.";
-    }
-
-    async function updateAll() {
-      const city = cityInput.value.trim();
-      if (!city) {
-        statusEl.textContent = "Введите название города.";
-        return;
-      }
-
-      statusEl.textContent = "Загружаю данные...";
-      weatherBox.innerHTML = "";
-
-      try {
-        const geo = await geocodeCity(city);
-        const forecast = await fetchForecast(geo.latitude, geo.longitude, geo.timezone);
-        cityLabel.textContent = "Город: " + geo.name + (geo.country ? ", " + geo.country : "");
-        renderWeather(forecast.daily);
-        reminderText.textContent = buildCareReminder(forecast.daily);
-        await loadHoliday(geo.country_code || "RU");
-        statusEl.textContent = "Данные обновлены.";
-      } catch (err) {
-        statusEl.textContent = err.message || "Произошла ошибка при загрузке данных.";
-        reminderText.textContent = "Не получилось получить прогноз. На всякий случай: возьми воду, легкую куртку и улыбку.";
-      }
-    }
-
-    loadBtn.addEventListener("click", updateAll);
-    seasonSelect.addEventListener("change", applySeasonTheme);
-    cityInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        updateAll();
-      }
-    });
-
-    applySeasonTheme();
-    updateAll();
-  </script>
+  <script src="js/calendar-data.js"></script>
+  <script src="js/weather-reminders.js"></script>
+  <script src="js/weather-app.js"></script>
 </body>
 </html>

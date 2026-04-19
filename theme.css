@@ -15,6 +15,7 @@
   --border: #c5dfd0;
   --shadow: 0 18px 50px rgba(25, 55, 48, 0.12);
   --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  --month-photo: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -89,6 +90,8 @@ body[data-season="winter"] {
 body {
   margin: 0;
   min-height: 100vh;
+  position: relative;
+  isolation: isolate;
   font-family: var(--font-body);
   font-size: 1.05rem;
   line-height: 1.55;
@@ -98,6 +101,31 @@ body {
     radial-gradient(120% 80% at 90% 10%, var(--bg-glow), transparent 55%),
     linear-gradient(155deg, var(--bg) 0%, var(--bg-soft) 55%, var(--bg-glow) 120%);
   background-attachment: fixed;
+}
+
+/* Фото месяца (опционально: файлы assets/month/01.jpg … 12.jpg), задаётся из JS через --month-photo */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55)), var(--month-photo);
+  background-size: cover, cover;
+  background-position: center, center;
+  opacity: 0;
+  transition: opacity 0.65s ease;
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  body::before {
+    background-image: linear-gradient(180deg, rgba(10, 18, 16, 0.88), rgba(10, 18, 16, 0.72)), var(--month-photo);
+  }
+}
+
+body[data-photo-ready="1"]::before {
+  opacity: 1;
+  transition: opacity 0.75s ease, background-image 0.5s ease;
 }
 
 h1,
@@ -121,6 +149,8 @@ h2 {
 }
 
 .wrap {
+  position: relative;
+  z-index: 1;
   max-width: 920px;
   margin: 0 auto;
   padding: 32px 18px 96px;
@@ -166,9 +196,15 @@ label.field-label {
 
 .controls {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 14px;
+}
+
+@media (min-width: 720px) {
+  .controls {
+    grid-template-columns: minmax(140px, 1fr) minmax(140px, 160px) minmax(160px, 190px) auto;
+  }
 }
 
 .season-select {
@@ -229,6 +265,143 @@ button:active,
   color: var(--muted);
   margin: 0;
   font-size: 0.95rem;
+}
+
+.weather-summary {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  color: var(--text);
+  min-height: 2.8em;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .weather-summary {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.weather-summary:empty {
+  display: none;
+}
+
+.panels-grid {
+  margin-top: 6px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.panels-grid .reminder-strip {
+  grid-column: 1 / -1;
+}
+
+.reminder-strip {
+  position: relative;
+  transition: box-shadow 0.45s ease, border-color 0.35s ease;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 12%, rgba(255, 255, 255, 0.65)),
+    rgba(255, 255, 255, 0.5)
+  );
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  .reminder-strip {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 18%, rgba(0, 0, 0, 0.35)),
+      rgba(0, 0, 0, 0.2)
+    );
+  }
+}
+
+.reminder-strip h2 {
+  font-size: 1.2rem;
+}
+
+.reminder-body {
+  font-size: 1.06rem;
+  transition: opacity 0.4s ease;
+}
+
+.reminder-body.reminder-fade {
+  animation: reminderTextIn 0.45s ease forwards;
+}
+
+@keyframes reminderTextIn {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.reminder-strip.is-updated {
+  animation: reminderPulse 0.65s ease-out;
+}
+
+@keyframes reminderPulse {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 12px transparent;
+  }
+}
+
+.flow-text {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.holiday-tier {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-family: var(--font-display);
+  color: var(--muted);
+}
+
+.holiday-title {
+  font-weight: 600;
+}
+
+.holiday-note {
+  margin: 10px 0 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.holiday-note:empty {
+  display: none;
+}
+
+.holiday-extras {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.panel-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.date-input {
+  min-width: 0;
 }
 
 .grid {
@@ -418,6 +591,18 @@ button:active,
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .reminder-strip.is-updated {
+    animation: none;
+  }
+
+  .reminder-body.reminder-fade {
+    animation: none;
+  }
+
+  .weather-summary {
+    transition: none;
+  }
+
   button:hover,
   .btn:hover,
   .fab-archive:hover {
