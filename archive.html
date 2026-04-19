@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Архив погоды</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body class="page-archive" data-season="spring">
+  <main class="wrap">
+    <div class="back-row">
+      <a class="back-link" href="index.html">← На главную</a>
+    </div>
+
+    <section class="card">
+      <h1 class="app-title">Архив погоды</h1>
+      <p class="date-text">Выберите место и дату — покажем сохранённые дневные данные (исторический архив Open-Meteo).</p>
+
+      <form class="archive-form" id="archiveForm" action="#" onsubmit="return false;">
+        <div class="archive-fields">
+          <div>
+            <label for="archiveCity" class="field-label">Город или населённый пункт</label>
+            <input id="archiveCity" list="cityListArchive" type="text" placeholder="Например, Казань" value="Москва" autocomplete="address-level2">
+          </div>
+          <div>
+            <label for="archiveDate" class="field-label">Дата</label>
+            <input id="archiveDate" type="date" required>
+          </div>
+        </div>
+        <button type="button" class="btn" id="archiveBtn">Показать в архиве</button>
+      </form>
+
+      <datalist id="cityListArchive">
+        <option value="Москва"></option>
+        <option value="Санкт-Петербург"></option>
+        <option value="Казань"></option>
+        <option value="Новосибирск"></option>
+        <option value="Екатеринбург"></option>
+        <option value="Минск"></option>
+        <option value="Алматы"></option>
+      </datalist>
+
+      <p id="archiveStatus" class="status"></p>
+
+      <div id="archiveResult" class="archive-result empty" role="region" aria-live="polite">
+        Здесь появится сводка за выбранный день.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const archiveCity = document.getElementById("archiveCity");
+    const archiveDate = document.getElementById("archiveDate");
+    const archiveBtn = document.getElementById("archiveBtn");
+    const archiveStatus = document.getElementById("archiveStatus");
+    const archiveResult = document.getElementById("archiveResult");
+
+    const today = new Date();
+    const isoToday =
+      today.getFullYear() +
+      "-" +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(today.getDate()).padStart(2, "0");
+
+    archiveDate.max = isoToday;
+    archiveDate.value = isoToday;
+
+    function getSeasonByMonth(monthIndex) {
+      if (monthIndex >= 2 && monthIndex <= 4) return "spring";
+      if (monthIndex >= 5 && monthIndex <= 7) return "summer";
+      if (monthIndex >= 8 && monthIndex <= 10) return "autumn";
+      return "winter";
+    }
+
+    function applySeasonFromDate(isoDateStr) {
+      const d = new Date(isoDateStr + "T12:00:00");
+      document.body.dataset.season = getSeasonByMonth(d.getMonth());
+    }
+
+    function weatherCodeToText(code) {
+      const map = {
+        0: "Ясно",
+        1: "Преимущественно ясно",
+        2: "Переменная облачность",
+        3: "Пасмурно",
+        45: "Туман",
+        48: "Туман с инеем",
+        51: "Слабая морось",
+        53: "Морось",
+        55: "Сильная морось",
+        61: "Слабый дождь",
+        63: "Дождь",
+        65: "Сильный дождь",
+        71: "Слабый снег",
+        73: "Снег",
+        75: "Сильный снег",
+        80: "Ливневый дождь",
+        95: "Гроза"
+      };
+      return map[code] ?? "Неизвестно";
+    }
+
+    function formatDateLong(isoDate) {
+      return new Intl.DateTimeFormat("ru-RU", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }).format(new Date(isoDate + "T12:00:00"));
+    }
+
+    async function geocodeCity(city) {
+      const params = new URLSearchParams({
+        name: city,
+        count: "1",
+        language: "ru",
+        format: "json"
+      });
+      const res = await fetch("https://geocoding-api.open-meteo.com/v1/search?" + params.toString());
+      if (!res.ok) {
+        throw new Error("Не удалось получить координаты города");
+      }
+      const data = await res.json();
+      if (!data.results || data.results.length === 0) {
+        throw new Error("Город не найден");
+      }
+      return data.results[0];
+    }
+
+    async function fetchHistoricalDaily(lat, lon, timezone, dateStr) {
+      const params = new URLSearchParams({
+        latitude: String(lat),
+        longitude: String(lon),
+        timezone: timezone || "auto",
+        start_date: dateStr,
+        end_date: dateStr,
+        daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max"
+      });
+      const res = await fetch("https://archive-api.open-meteo.com/v1/archive?" + params.toString());
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error("Архив недоступен для этих параметров: " + (errText.slice(0, 120) || res.status));
+      }
+      return res.json();
+    }
+
+    async function fetchForecastOneDay(lat, lon, timezone) {
+      const params = new URLSearchParams({
+        latitude: String(lat),
+        longitude: String(lon),
+        timezone: timezone || "auto",
+        daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max",
+        forecast_days: "1"
+      });
+      const res = await fetch("https://api.open-meteo.com/v1/forecast?" + params.toString());
+      if (!res.ok) {
+        throw new Error("Не удалось получить прогноз на сегодня");
+      }
+      return res.json();
+    }
+
+    function renderArchive(daily, cityLine, dateStr, sourceNote) {
+      if (!daily.time || daily.time.length === 0) {
+        archiveResult.className = "archive-result";
+        archiveResult.textContent = "За эту дату в архиве нет строки. Попробуйте другую дату или место.";
+        return;
+      }
+
+      const i = 0;
+      const wc = daily.weather_code[i];
+      const tmin = Math.round(daily.temperature_2m_min[i]);
+      const tmax = Math.round(daily.temperature_2m_max[i]);
+      const prec = daily.precipitation_sum[i];
+      const wind = daily.windspeed_10m_max[i];
+
+      archiveResult.className = "archive-result";
+      archiveResult.innerHTML =
+        "<p class=\"archive-lead\"><strong>" +
+        cityLine +
+        "</strong></p>" +
+        "<p class=\"archive-sub\">" +
+        formatDateLong(dateStr) +
+        "</p>" +
+        "<p class=\"archive-cond\"><strong>Условия:</strong> " +
+        weatherCodeToText(wc) +
+        "</p>" +
+        "<div class=\"archive-metric\">" +
+        "<div class=\"metric\"><span>Мин. температура</span><strong>" +
+        tmin +
+        "°C</strong></div>" +
+        "<div class=\"metric\"><span>Макс. температура</span><strong>" +
+        tmax +
+        "°C</strong></div>" +
+        "<div class=\"metric\"><span>Осадки за сутки</span><strong>" +
+        prec +
+        " мм</strong></div>" +
+        "<div class=\"metric\"><span>Ветер (макс.)</span><strong>" +
+        wind +
+        " км/ч</strong></div>" +
+        "</div>" +
+        "<p class=\"footer-note archive-source\">" +
+        sourceNote +
+        "</p>";
+    }
+
+    async function runArchive() {
+      const city = archiveCity.value.trim();
+      const dateStr = archiveDate.value;
+
+      if (!city) {
+        archiveStatus.textContent = "Укажите город.";
+        return;
+      }
+      if (!dateStr) {
+        archiveStatus.textContent = "Выберите дату.";
+        return;
+      }
+      if (dateStr > isoToday) {
+        archiveStatus.textContent = "Будущие даты недоступны — выберите сегодня или прошлое.";
+        return;
+      }
+
+      applySeasonFromDate(dateStr);
+      archiveStatus.textContent = "Загружаю архив…";
+      archiveResult.className = "archive-result empty";
+      archiveResult.textContent = "…";
+
+      try {
+        const geo = await geocodeCity(city);
+        const cityLine = geo.name + (geo.country ? ", " + geo.country : "");
+
+        let daily;
+        let sourceNote;
+
+        if (dateStr === isoToday) {
+          const fc = await fetchForecastOneDay(geo.latitude, geo.longitude, geo.timezone);
+          daily = fc.daily;
+          sourceNote = "Источник: прогноз Open-Meteo на текущие сутки (для «сегодня» удобнее оперативный прогноз).";
+        } else {
+          const arch = await fetchHistoricalDaily(geo.latitude, geo.longitude, geo.timezone, dateStr);
+          daily = arch.daily;
+          sourceNote = "Источник: исторический архив Open-Meteo (reanalysis).";
+        }
+
+        renderArchive(daily, cityLine, dateStr, sourceNote);
+        archiveStatus.textContent = "Готово.";
+      } catch (err) {
+        archiveStatus.textContent = err.message || "Ошибка загрузки.";
+        archiveResult.className = "archive-result";
+        archiveResult.textContent =
+          "Не удалось получить данные. Проверьте название города и дату (слишком ранние годы могут быть недоступны для региона).";
+      }
+    }
+
+    archiveBtn.addEventListener("click", runArchive);
+    archiveDate.addEventListener("change", function () {
+      if (archiveDate.value) {
+        applySeasonFromDate(archiveDate.value);
+      }
+    });
+
+    applySeasonFromDate(archiveDate.value || isoToday);
+    runArchive();
+  </script>
+</body>
+</html>
