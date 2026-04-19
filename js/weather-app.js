@@ -106,13 +106,19 @@
   }
 
   /**
-   * Фон по месяцу выбранной даты: сначала english name (january.jpg), затем fallback 01.jpg.
-   * Плавность — opacity на body::before (theme.css) + смена --month-photo.
+   * Фон по месяцу выбранной даты: приоритет числовые PNG (assets/month/01.png …), затем имя месяца, jpg.
+   * theme.css задаёт --month-photo по data-month для первого кадра; JS подтверждает после загрузки файла.
    */
   function setMonthBackground(month1to12) {
     document.body.dataset.month = String(month1to12);
     var name = MONTH_BG_NAMES[month1to12 - 1];
-    var tryUrls = ["assets/month/" + name + ".jpg", "assets/month/" + String(month1to12).padStart(2, "0") + ".jpg"];
+    var pad = String(month1to12).padStart(2, "0");
+    var tryUrls = [
+      "assets/month/" + pad + ".png",
+      "assets/month/" + name + ".png",
+      "assets/month/" + pad + ".jpg",
+      "assets/month/" + name + ".jpg"
+    ];
     var i = 0;
 
     function tryNext() {

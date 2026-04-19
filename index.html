@@ -9,7 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="theme.css">
 </head>
-<body data-season="spring" data-month="1">
+<body data-season="spring">
+  <script>
+    document.body.setAttribute("data-month", String(new Date().getMonth() + 1));
+  </script>
   <main class="wrap">
     <section class="card hero-card">
       <h1>Погода и день</h1>

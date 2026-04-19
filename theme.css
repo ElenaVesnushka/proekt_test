@@ -1,6 +1,6 @@
 /* =============================================================================
    Premium glass / editorial — фото месяца как полноэкранный фон, стекло на UI.
-   JS: --month-photo (url или none), data-photo-ready, data-season — без изменений.
+   --month-photo: по умолчанию из body[data-month] (PNG); JS может переопределить.
    ============================================================================= */
 
 :root {
@@ -30,11 +30,63 @@
   --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
   --month-photo: none;
 
+  /* Главная колонка: только стекло, без «белого щита» */
+  --wrap-glass: linear-gradient(
+    165deg,
+    rgba(255, 253, 250, 0.14) 0%,
+    rgba(248, 244, 238, 0.08) 48%,
+    rgba(242, 246, 242, 0.06) 100%
+  );
+  --wrap-glass-dark: linear-gradient(
+    165deg,
+    rgba(22, 28, 24, 0.28) 0%,
+    rgba(16, 20, 18, 0.16) 52%,
+    rgba(14, 18, 22, 0.12) 100%
+  );
+
   /* Сезонные подложки под фото (если фото ещё нет) */
   --bg: #eef4ef;
   --bg-soft: #e5ebe6;
   --bg-glow: #f5ebe8;
   --card-tint: rgba(255, 253, 250, 0.45);
+}
+
+/* Фото месяца по data-month — видно с первого кадра (пути совпадают с assets/month/*.png) */
+body[data-month="1"] {
+  --month-photo: url("assets/month/01.png");
+}
+body[data-month="2"] {
+  --month-photo: url("assets/month/02.png");
+}
+body[data-month="3"] {
+  --month-photo: url("assets/month/03.png");
+}
+body[data-month="4"] {
+  --month-photo: url("assets/month/04.png");
+}
+body[data-month="5"] {
+  --month-photo: url("assets/month/05.png");
+}
+body[data-month="6"] {
+  --month-photo: url("assets/month/06.png");
+}
+body[data-month="7"] {
+  --month-photo: url("assets/month/07.png");
+}
+body[data-month="8"] {
+  --month-photo: url("assets/month/08.png");
+}
+body[data-month="9"] {
+  --month-photo: url("assets/month/09.png");
+}
+body[data-month="10"] {
+  --month-photo: url("assets/month/10.png");
+}
+body[data-month="11"] {
+  --month-photo: url("assets/month/11.png");
+}
+body[data-month="12"] {
+  --month-photo: url("assets/month/12.png");
 }
 
 @media (prefers-color-scheme: dark) {
@@ -113,7 +165,7 @@ body {
   background-size: auto, auto;
 }
 
-/* Слой 1 (z:0): фото месяца — полноэкран, cover, fixed (задаётся JS: --month-photo) */
+/* Слой 1 (z:0): фото месяца — полноэкран; --month-photo из CSS (data-month) и/или из JS */
 body::before {
   content: "";
   position: fixed;
@@ -124,16 +176,12 @@ body::before {
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  opacity: 0;
-  transition: opacity 0.85s ease;
+  opacity: 1;
+  transition: opacity 0.55s ease;
   pointer-events: none;
 }
 
-body[data-photo-ready="1"]::before {
-  opacity: 1;
-}
-
-/* Слой 2 (z:1): мягкий «молочный» оверлей — читабельность, фото остаётся видимым */
+/* Слой 2 (z:1): лёгкий оверлей — текст читается, фото месяца остаётся главным визуалом */
 body::after {
   content: "";
   position: fixed;
@@ -142,9 +190,9 @@ body::after {
   pointer-events: none;
   background: linear-gradient(
     165deg,
-    rgba(255, 252, 248, 0.72) 0%,
-    rgba(245, 238, 232, 0.5) 42%,
-    rgba(238, 244, 240, 0.42) 100%
+    rgba(255, 252, 248, 0.34) 0%,
+    rgba(245, 238, 232, 0.22) 42%,
+    rgba(236, 242, 238, 0.18) 100%
   );
   transition: opacity 0.6s ease;
 }
@@ -153,9 +201,9 @@ body::after {
   body::after {
     background: linear-gradient(
       165deg,
-      rgba(18, 22, 20, 0.78) 0%,
-      rgba(14, 18, 16, 0.62) 50%,
-      rgba(12, 18, 22, 0.55) 100%
+      rgba(14, 18, 16, 0.48) 0%,
+      rgba(12, 16, 14, 0.36) 50%,
+      rgba(10, 14, 18, 0.32) 100%
     );
   }
 }
@@ -169,18 +217,19 @@ body::after {
   max-width: 940px;
   margin: 0 auto;
   padding: 28px 16px 100px;
-  background: var(--glass-mid);
-  backdrop-filter: blur(18px) saturate(1.2);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  background: var(--wrap-glass);
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
   border-radius: 32px;
   border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.22);
   transition: box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
 @media (prefers-color-scheme: dark) {
   .wrap {
-    box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    background: var(--wrap-glass-dark);
+    box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 }
 
