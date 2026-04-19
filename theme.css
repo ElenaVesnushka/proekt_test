@@ -1,84 +1,92 @@
-/* Погода — общая тема (frontend-design: характерная типографика, глубина, сезонные акценты) */
+/* =============================================================================
+   Premium glass / editorial — фото месяца как полноэкранный фон, стекло на UI.
+   JS: --month-photo (url или none), data-photo-ready, data-season — без изменений.
+   ============================================================================= */
 
 :root {
   color-scheme: light dark;
   --font-display: "Bricolage Grotesque", system-ui, sans-serif;
   --font-body: "Source Serif 4", "Georgia", serif;
-  --bg: #eef9f1;
-  --bg-soft: #e3f1ff;
-  --bg-glow: #fff3cf;
-  --card: #fffdf6;
-  --text: #1a2e32;
-  --muted: #4d6a72;
-  --accent: #ff8f6b;
-  --accent-2: #e85d3a;
-  --border: #c5dfd0;
-  --shadow: 0 18px 50px rgba(25, 55, 48, 0.12);
-  --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+
+  /* Палитра: тёплый белый, дымка, пыльная роза, терракота, графит */
+  --cream: #fdfbf8;
+  --mist: #e8ebe4;
+  --rose-dust: #ebe2df;
+  --graphite: #2a2e2c;
+  --terra: #c45c3e;
+  --terra-deep: #9a4330;
+  --sage: #8a9a8e;
+
+  --text: #1e2420;
+  --muted: #5c6560;
+  --accent: #d4785c;
+  --accent-2: #b85a42;
+  --border-glass: rgba(255, 255, 255, 0.55);
+  --border-soft: rgba(255, 255, 255, 0.35);
+  --shadow-soft: 0 28px 64px rgba(32, 38, 34, 0.1);
+  --shadow-lift: 0 12px 40px rgba(32, 38, 34, 0.08);
+  --glass-light: rgba(255, 255, 255, 0.52);
+  --glass-mid: rgba(255, 252, 248, 0.38);
+  --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
   --month-photo: none;
+
+  /* Сезонные подложки под фото (если фото ещё нет) */
+  --bg: #eef4ef;
+  --bg-soft: #e5ebe6;
+  --bg-glow: #f5ebe8;
+  --card-tint: rgba(255, 253, 250, 0.45);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1614;
-    --bg-soft: #152428;
-    --bg-glow: #1a2a35;
-    --card: #121f1c;
-    --text: #e6f4ec;
-    --muted: #8fb3a8;
-    --accent: #ffb088;
-    --accent-2: #ff8f5c;
-    --border: #2a4038;
-    --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    --cream: #141a17;
+    --text: #e8ebe9;
+    --muted: #9ca8a0;
+    --accent: #e8a088;
+    --accent-2: #d4826a;
+    --border-glass: rgba(255, 255, 255, 0.12);
+    --border-soft: rgba(255, 255, 255, 0.08);
+    --shadow-soft: 0 28px 64px rgba(0, 0, 0, 0.45);
+    --shadow-lift: 0 12px 40px rgba(0, 0, 0, 0.35);
+    --glass-light: rgba(28, 34, 30, 0.55);
+    --glass-mid: rgba(22, 28, 24, 0.42);
+    --card-tint: rgba(22, 28, 24, 0.5);
+    --bg: #121816;
+    --bg-soft: #1a221e;
+    --bg-glow: #1e2822;
   }
 }
 
 body[data-season="spring"] {
-  --bg: #eef9f1;
-  --bg-soft: #e3f1ff;
-  --bg-glow: #ffe8f0;
-  --card: #fffdf6;
-  --text: #1a2e32;
-  --muted: #4d6a72;
-  --accent: #ff8f6b;
-  --accent-2: #e85d3a;
-  --border: #c5dfd0;
+  --bg: #edf5ef;
+  --bg-soft: #e3ebe5;
+  --bg-glow: #f0e8e6;
+  --accent: #d4785c;
+  --accent-2: #b85a42;
 }
 
 body[data-season="summer"] {
-  --bg: #e8fbff;
-  --bg-soft: #dff9df;
-  --bg-glow: #fff8e4;
-  --card: #fffef8;
-  --text: #152a2e;
-  --muted: #4a6d72;
-  --accent: #ffad33;
-  --accent-2: #e89400;
-  --border: #c0e8dc;
+  --bg: #eaf4f0;
+  --bg-soft: #e0ebe4;
+  --bg-glow: #f2f0e4;
+  --accent: #c9893a;
+  --accent-2: #a86f2e;
 }
 
 body[data-season="autumn"] {
-  --bg: #fff3e7;
-  --bg-soft: #ffe4cf;
-  --bg-glow: #ffd8c2;
-  --card: #fffaf5;
-  --text: #2c2118;
-  --muted: #7a5f49;
-  --accent: #f08a24;
-  --accent-2: #c45c0a;
-  --border: #e8c9a8;
+  --bg: #f2ebe4;
+  --bg-soft: #ebe0d6;
+  --bg-glow: #ead9cc;
+  --accent: #c76b3a;
+  --accent-2: #a3552e;
 }
 
 body[data-season="winter"] {
-  --bg: #e8f0fb;
-  --bg-soft: #dce8f7;
-  --bg-glow: #f0f6ff;
-  --card: #f7fbff;
-  --text: #1a2838;
-  --muted: #5a7390;
-  --accent: #6da9ff;
-  --accent-2: #3e8cff;
-  --border: #c0d4ea;
+  --bg: #e8eef0;
+  --bg-soft: #dfe8ec;
+  --bg-glow: #e8eef5;
+  --accent: #7a9eb8;
+  --accent-2: #5a7fa0;
 }
 
 *,
@@ -87,104 +95,150 @@ body[data-season="winter"] {
   box-sizing: border-box;
 }
 
+/* -----------------------------------------------------------------------------
+   Фон страницы (body): базовый сезонный градиент + шум (виден, если нет фото)
+   ----------------------------------------------------------------------------- */
 body {
   margin: 0;
   min-height: 100vh;
   position: relative;
   isolation: isolate;
   font-family: var(--font-body);
-  font-size: 1.05rem;
-  line-height: 1.55;
+  font-size: 1.06rem;
+  line-height: 1.58;
   color: var(--text);
-  background:
-    var(--noise),
-    radial-gradient(120% 80% at 90% 10%, var(--bg-glow), transparent 55%),
-    linear-gradient(155deg, var(--bg) 0%, var(--bg-soft) 55%, var(--bg-glow) 120%);
+  background-color: var(--bg);
+  background-image: var(--noise), linear-gradient(165deg, var(--bg) 0%, var(--bg-soft) 45%, var(--bg-glow) 100%);
   background-attachment: fixed;
+  background-size: auto, auto;
 }
 
-/* Фото месяца (опционально: файлы assets/month/01.jpg … 12.jpg), задаётся из JS через --month-photo */
+/* Слой 1 (z:0): фото месяца — полноэкран, cover, fixed (задаётся JS: --month-photo) */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: -1;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55)), var(--month-photo);
-  background-size: cover, cover;
-  background-position: center, center;
+  z-index: 0;
+  background-image: var(--month-photo);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   opacity: 0;
-  transition: opacity 0.65s ease;
+  transition: opacity 0.85s ease;
   pointer-events: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  body::before {
-    background-image: linear-gradient(180deg, rgba(10, 18, 16, 0.88), rgba(10, 18, 16, 0.72)), var(--month-photo);
-  }
 }
 
 body[data-photo-ready="1"]::before {
   opacity: 1;
-  transition: opacity 0.75s ease, background-image 0.5s ease;
 }
 
+/* Слой 2 (z:1): мягкий «молочный» оверлей — читабельность, фото остаётся видимым */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 252, 248, 0.72) 0%,
+    rgba(245, 238, 232, 0.5) 42%,
+    rgba(238, 244, 240, 0.42) 100%
+  );
+  transition: opacity 0.6s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  body::after {
+    background: linear-gradient(
+      165deg,
+      rgba(18, 22, 20, 0.78) 0%,
+      rgba(14, 18, 16, 0.62) 50%,
+      rgba(12, 18, 22, 0.55) 100%
+    );
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Главный контейнер (.wrap): премиальная стеклянная «оболочка» страницы
+   ----------------------------------------------------------------------------- */
+.wrap {
+  position: relative;
+  z-index: 2;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 28px 16px 100px;
+  background: var(--glass-mid);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border-radius: 32px;
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wrap {
+    box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* Внутренний hero-card: не второй «щит» — прозрачный, без своей жирной подложки */
+.wrap > .card.hero-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 8px 8px 4px;
+  overflow: visible;
+}
+
+.wrap > .card.hero-card::before {
+  display: none;
+}
+
+.wrap > .card.hero-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Типографика */
 h1,
 h2,
 .app-title {
   font-family: var(--font-display);
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
 }
 
 h1 {
-  margin: 0 0 8px;
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  margin: 0 0 10px;
+  font-size: clamp(2rem, 4.5vw, 2.65rem);
+  color: var(--graphite);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  h1 {
+    color: var(--text);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
 }
 
 h2 {
-  margin: 0 0 8px;
-  font-size: 1.15rem;
+  margin: 0 0 10px;
+  font-size: 1.18rem;
+  font-weight: 650;
   color: var(--accent-2);
-}
-
-.wrap {
-  position: relative;
-  z-index: 1;
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 32px 18px 96px;
-}
-
-.card {
-  position: relative;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: var(--shadow);
-  padding: 26px 22px;
-  overflow: hidden;
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.35), transparent 40%);
-  opacity: 0.5;
-}
-
-.card > * {
-  position: relative;
-  z-index: 1;
+  letter-spacing: -0.02em;
 }
 
 .date-text {
   color: var(--muted);
-  margin: 0 0 20px;
-  font-size: 0.98rem;
+  margin: 0 0 22px;
+  font-size: 1.02rem;
+  letter-spacing: 0.01em;
 }
 
 label.field-label {
@@ -194,11 +248,29 @@ label.field-label {
   color: var(--muted);
 }
 
+/* -----------------------------------------------------------------------------
+   Control bar (.controls): единая панель ввода
+   ----------------------------------------------------------------------------- */
 .controls {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), var(--shadow-lift);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .controls {
+    background: rgba(0, 0, 0, 0.22);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), var(--shadow-lift);
+  }
 }
 
 @media (min-width: 720px) {
@@ -215,85 +287,126 @@ input,
 button,
 select {
   font-family: var(--font-body);
-  font-size: 1rem;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  padding: 11px 14px;
+  font-size: 1.02rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  padding: 13px 16px;
   outline: none;
   background: rgba(255, 255, 255, 0.55);
   color: var(--text);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, transform 0.2s ease;
 }
 
 @media (prefers-color-scheme: dark) {
   input,
   select {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.28);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
   }
 }
 
+input:hover,
+select:hover {
+  border-color: rgba(212, 120, 92, 0.45);
+  background: rgba(255, 255, 255, 0.68);
+}
+
 input:focus,
-button:focus,
 select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 55%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent), inset 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 button,
 .btn {
   font-family: var(--font-display);
   font-weight: 600;
-  background: linear-gradient(145deg, var(--accent), var(--accent-2));
-  color: #fff;
-  border: none;
+  font-size: 0.98rem;
+  letter-spacing: 0.02em;
+  color: #fffdf9;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 40%, transparent);
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 92%, #fff) 0%, var(--accent-2) 100%);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-2) 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
 }
 
 button:hover,
 .btn:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
+  filter: brightness(1.04);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--accent-2) 40%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 button:active,
 .btn:active {
   transform: translateY(0);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-2) 30%, transparent);
+}
+
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .status {
-  min-height: 1.4em;
+  min-height: 1.45em;
   color: var(--muted);
-  margin: 0;
-  font-size: 0.95rem;
+  margin: 0 0 6px;
+  font-size: 0.96rem;
 }
 
-.weather-summary {
-  margin: 0 0 16px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.45);
-  font-family: var(--font-display);
-  font-size: 0.98rem;
-  color: var(--text);
-  min-height: 2.8em;
-  transition: opacity 0.35s ease, transform 0.35s ease;
+/* -----------------------------------------------------------------------------
+   Карточки: погода, настроение, праздник — стекло
+   ----------------------------------------------------------------------------- */
+.card {
+  position: relative;
+  border-radius: 22px;
+  padding: 22px 20px;
+  overflow: hidden;
+  background: var(--card-tint);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-lift), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.28) 0%, transparent 55%);
+  opacity: 0.65;
+}
+
+.card:hover {
+  box-shadow: 0 18px 48px rgba(32, 38, 34, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 @media (prefers-color-scheme: dark) {
-  .weather-summary {
-    background: rgba(0, 0, 0, 0.2);
+  .card {
+    box-shadow: var(--shadow-lift), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  .card::before {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.06) 0%, transparent 55%);
   }
 }
 
-.weather-summary:empty {
-  display: none;
+.card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .panels-grid {
-  margin-top: 6px;
+  margin-top: 8px;
   display: grid;
-  gap: 14px;
+  gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
@@ -301,34 +414,73 @@ button:active,
   grid-column: 1 / -1;
 }
 
+/* -----------------------------------------------------------------------------
+   Блок «Шуточно-заботливое напоминание» — эмоциональный акцент
+   ----------------------------------------------------------------------------- */
 .reminder-strip {
   position: relative;
-  transition: box-shadow 0.45s ease, border-color 0.35s ease;
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  padding: 26px 24px 28px;
+  border-radius: 26px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.5));
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--accent) 12%, rgba(255, 255, 255, 0.65)),
-    rgba(255, 255, 255, 0.5)
+    color-mix(in srgb, var(--accent) 18%, rgba(255, 252, 248, 0.55)) 0%,
+    rgba(255, 248, 242, 0.42) 50%,
+    rgba(255, 255, 255, 0.28) 100%
   );
-  box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 18%, transparent);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  box-shadow:
+    0 20px 56px color-mix(in srgb, var(--accent-2) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(212, 120, 92, 0.12);
+  transition: box-shadow 0.45s ease, border-color 0.35s ease, transform 0.35s ease;
+}
+
+.reminder-strip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 90% 60% at 20% 0%, rgba(255, 255, 255, 0.35), transparent 55%);
+  opacity: 0.9;
+}
+
+.reminder-strip > * {
+  position: relative;
+  z-index: 1;
+}
+
+.reminder-strip h2 {
+  font-size: clamp(1.35rem, 2.8vw, 1.55rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+  color: var(--terra-deep);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
   .reminder-strip {
     background: linear-gradient(
       135deg,
-      color-mix(in srgb, var(--accent) 18%, rgba(0, 0, 0, 0.35)),
-      rgba(0, 0, 0, 0.2)
+      color-mix(in srgb, var(--accent) 22%, rgba(20, 26, 22, 0.55)) 0%,
+      rgba(24, 30, 26, 0.45) 100%
     );
+    border-color: color-mix(in srgb, var(--accent) 35%, rgba(255, 255, 255, 0.08));
+  }
+  .reminder-strip h2 {
+    color: var(--accent);
+    text-shadow: none;
   }
 }
 
-.reminder-strip h2 {
-  font-size: 1.2rem;
-}
-
 .reminder-body {
-  font-size: 1.06rem;
+  font-size: 1.12rem;
+  line-height: 1.62;
+  font-weight: 450;
+  color: var(--text);
   transition: opacity 0.4s ease;
 }
 
@@ -338,7 +490,7 @@ button:active,
 
 @keyframes reminderTextIn {
   from {
-    opacity: 0.35;
+    opacity: 0.4;
   }
   to {
     opacity: 1;
@@ -351,36 +503,64 @@ button:active,
 
 @keyframes reminderPulse {
   from {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent);
   }
   to {
-    box-shadow: 0 0 0 12px transparent;
+    box-shadow: 0 0 0 14px transparent;
   }
+}
+
+.weather-summary {
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--text);
+  min-height: 2.8em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .weather-summary {
+    background: rgba(0, 0, 0, 0.22);
+  }
+}
+
+.weather-summary:empty {
+  display: none;
 }
 
 .flow-text {
   margin: 0;
-  line-height: 1.55;
+  line-height: 1.58;
 }
 
 .holiday-tier {
   margin: 10px 0 0;
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: var(--font-display);
   color: var(--muted);
+  font-weight: 600;
 }
 
 .holiday-title {
   font-weight: 600;
+  font-size: 1.05rem;
 }
 
 .holiday-note {
   margin: 10px 0 0;
-  font-size: 0.95rem;
+  font-size: 0.96rem;
   color: var(--muted);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .holiday-note:empty {
@@ -412,33 +592,43 @@ button:active,
 }
 
 .panel p {
-  margin: 0.35rem 0;
+  margin: 0.4rem 0;
 }
 
 .weather-line {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-top: 8px;
-  background: rgba(255, 255, 255, 0.35);
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.weather-line:hover {
+  border-color: rgba(212, 120, 92, 0.25);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
   .weather-line {
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.2);
   }
 }
 
 .footer-note {
-  margin-top: 14px;
+  margin-top: 16px;
   color: var(--muted);
   font-size: 0.88rem;
+  line-height: 1.45;
+  opacity: 0.92;
 }
 
-/* Плавающая кнопка — архив */
+/* FAB архив — стекло + градиент */
 .fab-archive {
   position: fixed;
   right: 22px;
@@ -447,22 +637,25 @@ button:active,
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 20px;
+  padding: 15px 22px;
   border-radius: 999px;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 0.95rem;
   text-decoration: none;
-  color: #fff;
-  background: linear-gradient(145deg, var(--accent-2), color-mix(in srgb, var(--accent-2) 70%, #1a1a1a));
-  box-shadow: 0 12px 36px color-mix(in srgb, var(--accent-2) 45%, transparent);
-  border: 1px solid color-mix(in srgb, #fff 22%, transparent);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: #fffdf9;
+  background: linear-gradient(155deg, var(--accent) 0%, var(--terra-deep) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 14px 40px color-mix(in srgb, var(--accent-2) 42%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
 }
 
 .fab-archive:hover {
   transform: translateY(-3px);
-  box-shadow: 0 16px 44px color-mix(in srgb, var(--accent-2) 55%, transparent);
+  box-shadow: 0 20px 48px color-mix(in srgb, var(--accent-2) 48%, transparent);
+  filter: brightness(1.03);
 }
 
 .fab-archive:focus-visible {
@@ -486,10 +679,12 @@ button:active,
   color: var(--accent-2);
   text-decoration: none;
   border-bottom: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 
 .back-link:hover {
   border-bottom-color: var(--accent-2);
+  color: var(--accent);
 }
 
 .archive-form {
@@ -508,15 +703,17 @@ button:active,
 
 .archive-result {
   margin-top: 8px;
-  padding: 16px;
-  border-radius: 14px;
-  border: 1px dashed var(--border);
-  background: rgba(255, 255, 255, 0.25);
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 25%, var(--border-soft));
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 @media (prefers-color-scheme: dark) {
   .archive-result {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.22);
   }
 }
 
@@ -552,15 +749,17 @@ button:active,
 }
 
 .metric {
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.4);
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 @media (prefers-color-scheme: dark) {
   .metric {
-    background: rgba(0, 0, 0, 0.18);
+    background: rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -577,8 +776,15 @@ button:active,
 }
 
 @media (max-width: 700px) {
+  .wrap {
+    margin: 0 12px;
+    border-radius: 26px;
+    padding: 22px 14px 96px;
+  }
+
   .controls {
     grid-template-columns: 1fr;
+    padding: 14px;
   }
 
   .archive-form {
@@ -607,5 +813,9 @@ button:active,
   .btn:hover,
   .fab-archive:hover {
     transform: none;
+  }
+
+  body::before {
+    transition: none;
   }
 }
