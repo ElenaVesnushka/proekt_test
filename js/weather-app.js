@@ -34,6 +34,9 @@
   var reminderText = document.getElementById("reminderText");
   var reminderBlock = document.getElementById("reminderBlock");
 
+  /** Последний успешно подставленный URL фона месяца (для плавной смены) */
+  var lastMonthPhotoUrl = null;
+
   /** Координаты из navigator.geolocation (без ключа), если пользователь разрешил */
   var geoLat = null;
   var geoLon = null;
@@ -121,25 +124,60 @@
     ];
     var i = 0;
 
+    function applyPhotoUrl(url) {
+      var css = "url(" + url + ")";
+      function commit() {
+        document.body.style.setProperty("--month-photo", css);
+        document.body.setAttribute("data-photo-ready", "1");
+        lastMonthPhotoUrl = url;
+      }
+      if (lastMonthPhotoUrl && lastMonthPhotoUrl !== url) {
+        document.body.classList.add("month-bg-fade-out");
+        window.setTimeout(function () {
+          commit();
+          document.body.classList.remove("month-bg-fade-out");
+        }, 300);
+      } else {
+        commit();
+      }
+    }
+
     function tryNext() {
       if (i >= tryUrls.length) {
         document.body.style.setProperty("--month-photo", "none");
         document.body.removeAttribute("data-photo-ready");
+        lastMonthPhotoUrl = null;
         return;
       }
+      var idx = i;
       var img = new Image();
       img.onload = function () {
-        document.body.style.setProperty("--month-photo", "url(" + tryUrls[i] + ")");
-        document.body.setAttribute("data-photo-ready", "1");
+        applyPhotoUrl(tryUrls[idx]);
       };
       img.onerror = function () {
         i += 1;
         tryNext();
       };
-      img.src = tryUrls[i];
+      img.src = tryUrls[idx];
     }
 
     tryNext();
+  }
+
+  /** Плавная смена текстового содержимого (прогноз, настроение, напоминание). */
+  function setTextWithFade(el, text) {
+    if (!el) return;
+    var next = text == null ? "" : String(text);
+    if (el.textContent === next) return;
+    el.classList.add("ui-text-leave");
+    window.setTimeout(function () {
+      el.textContent = next;
+      el.classList.remove("ui-text-leave");
+      el.classList.add("ui-text-enter");
+      window.setTimeout(function () {
+        el.classList.remove("ui-text-enter");
+      }, 480);
+    }, 170);
   }
 
   function weatherCodeToText(code) {
@@ -212,7 +250,7 @@
     dateEl.textContent = "Выбранный день: " + formatterLong.format(new Date(iso + "T12:00:00"));
     setMonthBackground(d.m);
     applySeasonTheme();
-    dayMoodText.textContent = CD.getDailyMessage(iso);
+    setTextWithFade(dayMoodText, CD.getDailyMessage(iso));
     renderHolidayForDate(iso);
   }
 
@@ -229,13 +267,28 @@
     } else {
       text = CD.pickGenericReminder(iso);
     }
-    reminderText.textContent = text;
-    reminderBlock.classList.remove("is-updated");
-    void reminderBlock.offsetWidth;
-    reminderBlock.classList.add("is-updated");
-    reminderText.classList.remove("reminder-fade");
-    void reminderText.offsetWidth;
-    reminderText.classList.add("reminder-fade");
+    function afterTextCommit() {
+      reminderBlock.classList.remove("is-updated");
+      void reminderBlock.offsetWidth;
+      reminderBlock.classList.add("is-updated");
+      reminderText.classList.remove("reminder-fade");
+      void reminderText.offsetWidth;
+      reminderText.classList.add("reminder-fade");
+    }
+    if (reminderText.textContent === text) {
+      afterTextCommit();
+      return;
+    }
+    reminderText.classList.add("ui-text-leave");
+    window.setTimeout(function () {
+      reminderText.textContent = text;
+      reminderText.classList.remove("ui-text-leave");
+      reminderText.classList.add("ui-text-enter");
+      window.setTimeout(function () {
+        reminderText.classList.remove("ui-text-enter");
+      }, 480);
+      afterTextCommit();
+    }, 170);
   }
 
   function tryGeolocationOnce() {
@@ -363,6 +416,9 @@
 
     updateUI(iso);
     weatherSummary.textContent = "";
+    if (typeof globalThis.applyWeatherEffects === "function") {
+      globalThis.applyWeatherEffects(null);
+    }
     updateReminderBlock(iso, null, null);
 
     var geo;
@@ -372,6 +428,9 @@
     } catch (e) {
       statusEl.textContent = e.message || "Ошибка";
       weatherBox.innerHTML = "";
+      if (typeof globalThis.applyWeatherEffects === "function") {
+        globalThis.applyWeatherEffects(null);
+      }
       updateReminderBlock(iso, null, CD.pickGenericReminder(iso));
       return;
     }
@@ -383,10 +442,15 @@
 
     try {
       if (cmp > 0) {
-        weatherSummary.textContent =
-          "Прогноз на будущую дату здесь не строим — выберите сегодня или прошлый день для фактической погоды.";
+        setTextWithFade(
+          weatherSummary,
+          "Прогноз на будущую дату здесь не строим — выберите сегодня или прошлый день для фактической погоды."
+        );
         weatherBox.innerHTML =
           "<p class=\"panel-note\">Настроение дня и календарь уже подстроены под выбранную дату.</p>";
+        if (typeof globalThis.applyWeatherEffects === "function") {
+          globalThis.applyWeatherEffects(null);
+        }
         updateReminderBlock(
           iso,
           null,
@@ -399,7 +463,7 @@
       if (cmp === 0) {
         var forecast = await fetchForecast(geo.latitude, geo.longitude, geo.timezone);
         renderWeatherLines(forecast.daily);
-        weatherSummary.textContent = oneLineSummary(forecast.daily, 0);
+        setTextWithFade(weatherSummary, oneLineSummary(forecast.daily, 0));
 
         var snap = WR.snapshotFromDailyRow(forecast.daily, 0);
         try {
@@ -411,6 +475,9 @@
           /* оставляем снимок из дневной строки прогноза */
         }
 
+        if (typeof globalThis.applyWeatherEffects === "function") {
+          globalThis.applyWeatherEffects(snap);
+        }
         updateReminderBlock(iso, snap, null);
         statusEl.textContent = "Данные обновлены (прогноз + текущие условия, если доступны).";
         return;
@@ -421,13 +488,19 @@
         throw new Error("Нет строки в архиве за эту дату");
       }
       renderWeatherLines(arch.daily);
-      weatherSummary.textContent = oneLineSummary(arch.daily, 0) + " (архив).";
+      setTextWithFade(weatherSummary, oneLineSummary(arch.daily, 0) + " (архив).");
       var pastSnap = WR.snapshotFromDailyRow(arch.daily, 0);
+      if (typeof globalThis.applyWeatherEffects === "function") {
+        globalThis.applyWeatherEffects(pastSnap);
+      }
       updateReminderBlock(iso, pastSnap, null);
       statusEl.textContent = "Загружен архив за выбранный день.";
     } catch (err) {
       statusEl.textContent = err.message || "Ошибка загрузки.";
       weatherSummary.textContent = "";
+      if (typeof globalThis.applyWeatherEffects === "function") {
+        globalThis.applyWeatherEffects(null);
+      }
       updateReminderBlock(iso, null, "Погода не подгрузилась — " + CD.pickGenericReminder(iso));
     }
   }

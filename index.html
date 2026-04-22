@@ -49,25 +49,25 @@
           <h2>Погода</h2>
           <p id="cityLabel">Город: —</p>
           <div id="weatherBox"></div>
-          <p class="footer-note">Прогноз: Open-Meteo. Сегодня — оперативный прогноз; прошлые дни — архив reanalysis.</p>
+          <p class="footer-note ui-meta-hidden">Прогноз: Open-Meteo. Сегодня — оперативный прогноз; прошлые дни — архив reanalysis.</p>
         </article>
 
         <article class="panel card">
           <h2>Настроение дня</h2>
           <p id="dayMoodText" class="flow-text">…</p>
-          <p class="footer-note">Без знаков зодиака — общий совет и ритм дня.</p>
+          <p class="footer-note ui-meta-hidden">Без знаков зодиака — общий совет и ритм дня.</p>
         </article>
 
         <article class="panel card">
           <h2>Праздник / памятная дата</h2>
           <p id="holidayText" class="flow-text holiday-title">…</p>
-          <p id="holidayMeta" class="holiday-tier" hidden></p>
+          <p id="holidayMeta" class="holiday-tier ui-meta-hidden" hidden></p>
           <p id="holidayNote" class="holiday-note flow-text"></p>
-          <p id="holidayExtras" class="holiday-extras" hidden></p>
+          <p id="holidayExtras" class="holiday-extras ui-meta-hidden" hidden></p>
         </article>
 
         <article class="panel card reminder-strip" id="reminderBlock" aria-live="polite">
-          <h2>Шуточно-заботливое напоминание</h2>
+          <h2 class="reminder-strip__title"><span class="reminder-strip__mark" aria-hidden="true">🦊</span> Совет Лисицы</h2>
           <p id="reminderText" class="flow-text reminder-body">…</p>
         </article>
       </div>
@@ -81,6 +81,7 @@
 
   <script src="js/calendar-data.js"></script>
   <script src="js/weather-reminders.js"></script>
+  <script src="js/weather-effects.js"></script>
   <script src="js/weather-app.js"></script>
 </body>
 </html>

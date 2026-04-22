@@ -187,6 +187,10 @@ body::before {
   pointer-events: none;
 }
 
+body.month-bg-fade-out::before {
+  opacity: 0;
+}
+
 /* Слой 2 (z:1): лёгкий оверлей — текст читается, фото месяца остаётся главным визуалом */
 body::after {
   content: "";
@@ -214,12 +218,17 @@ body::after {
   }
 }
 
+/* Служебные подписи и тип праздника — в разметке для логики, в UI не показываем */
+.ui-meta-hidden {
+  display: none !important;
+}
+
 /* -----------------------------------------------------------------------------
    Главный контейнер (.wrap): премиальная стеклянная «оболочка» страницы
    ----------------------------------------------------------------------------- */
 .wrap {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   max-width: 940px;
   margin: 0 auto;
   padding: 28px 16px 100px;
@@ -229,7 +238,11 @@ body::after {
   border-radius: 32px;
   border: 1px solid var(--border-glass);
   box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+  transition:
+    box-shadow 0.45s ease,
+    border-color 0.4s ease,
+    backdrop-filter 0.6s ease,
+    filter 0.6s ease;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -385,7 +398,12 @@ button,
   cursor: pointer;
   background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 92%, #fff) 0%, var(--accent-2) 100%);
   box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-2) 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.32s ease,
+    filter 0.28s ease,
+    background 0.35s ease,
+    border-color 0.3s ease;
 }
 
 button:hover,
@@ -427,7 +445,11 @@ button:focus-visible,
   -webkit-backdrop-filter: blur(14px) saturate(1.1);
   border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-lift), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  transition:
+    transform 0.38s ease,
+    box-shadow 0.38s ease,
+    border-color 0.35s ease,
+    background 0.4s ease;
 }
 
 .card::before {
@@ -470,26 +492,28 @@ button:focus-visible,
 }
 
 /* -----------------------------------------------------------------------------
-   Блок «Шуточно-заботливое напоминание» — эмоциональный акцент
+   «Совет Лисицы» — эмоциональное ядро интерфейса
    ----------------------------------------------------------------------------- */
 .reminder-strip {
   position: relative;
-  padding: 26px 24px 28px;
-  border-radius: 26px;
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.5));
+  padding: 34px 32px 38px;
+  border-radius: 28px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, rgba(255, 255, 255, 0.55));
   background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--accent) 18%, rgba(255, 252, 248, 0.55)) 0%,
-    rgba(255, 248, 242, 0.42) 50%,
-    rgba(255, 255, 255, 0.28) 100%
+    128deg,
+    color-mix(in srgb, var(--accent) 26%, rgba(255, 250, 244, 0.72)) 0%,
+    rgba(255, 242, 232, 0.55) 38%,
+    rgba(255, 248, 240, 0.42) 72%,
+    rgba(255, 255, 255, 0.22) 100%
   );
-  backdrop-filter: blur(16px) saturate(1.15);
-  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.22);
+  -webkit-backdrop-filter: blur(18px) saturate(1.22);
   box-shadow:
-    0 20px 56px color-mix(in srgb, var(--accent-2) 22%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -1px 0 rgba(212, 120, 92, 0.12);
-  transition: box-shadow 0.45s ease, border-color 0.35s ease, transform 0.35s ease;
+    0 28px 72px color-mix(in srgb, var(--accent-2) 28%, transparent),
+    0 0 48px color-mix(in srgb, var(--accent) 12%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -1px 0 rgba(212, 120, 92, 0.1);
+  transition: box-shadow 0.5s ease, border-color 0.4s ease, transform 0.4s ease;
 }
 
 .reminder-strip::after {
@@ -498,8 +522,10 @@ button:focus-visible,
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: radial-gradient(ellipse 90% 60% at 20% 0%, rgba(255, 255, 255, 0.35), transparent 55%);
-  opacity: 0.9;
+  background:
+    radial-gradient(ellipse 95% 65% at 18% 0%, rgba(255, 255, 255, 0.42), transparent 58%),
+    radial-gradient(ellipse 70% 50% at 92% 100%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 55%);
+  opacity: 0.95;
 }
 
 .reminder-strip > * {
@@ -507,45 +533,63 @@ button:focus-visible,
   z-index: 1;
 }
 
-.reminder-strip h2 {
-  font-size: clamp(1.35rem, 2.8vw, 1.55rem);
+.reminder-strip__title {
+  font-size: clamp(1.42rem, 3vw, 1.68rem);
   font-weight: 700;
-  letter-spacing: -0.03em;
-  margin-bottom: 12px;
+  letter-spacing: -0.035em;
+  margin: 0 0 16px;
   color: var(--terra-deep);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reminder-strip__mark {
+  font-size: 0.92em;
+  line-height: 1;
+  opacity: 0.82;
+  filter: grayscale(0.08);
 }
 
 @media (prefers-color-scheme: dark) {
   .reminder-strip {
     background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) 22%, rgba(20, 26, 22, 0.55)) 0%,
-      rgba(24, 30, 26, 0.45) 100%
+      128deg,
+      color-mix(in srgb, var(--accent) 30%, rgba(28, 32, 28, 0.62)) 0%,
+      rgba(26, 30, 26, 0.5) 55%,
+      rgba(20, 24, 22, 0.42) 100%
     );
-    border-color: color-mix(in srgb, var(--accent) 35%, rgba(255, 255, 255, 0.08));
+    border-color: color-mix(in srgb, var(--accent) 38%, rgba(255, 255, 255, 0.1));
+    box-shadow:
+      0 28px 64px rgba(0, 0, 0, 0.4),
+      0 0 40px color-mix(in srgb, var(--accent) 18%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   }
-  .reminder-strip h2 {
+  .reminder-strip__title {
     color: var(--accent);
-    text-shadow: none;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   }
 }
 
 .reminder-body {
-  font-size: 1.12rem;
-  line-height: 1.62;
+  font-size: 1.2rem;
+  line-height: 1.68;
   font-weight: 450;
   color: var(--text);
-  transition: opacity 0.4s ease;
+  letter-spacing: 0.01em;
+  transition: opacity 0.45s ease;
 }
 
 .reminder-body.reminder-fade {
-  animation: reminderTextIn 0.45s ease forwards;
+  animation: reminderTextIn 0.65s ease forwards;
 }
 
 @keyframes reminderTextIn {
   from {
-    opacity: 0.4;
+    opacity: 0.35;
   }
   to {
     opacity: 1;
@@ -553,15 +597,36 @@ button:focus-visible,
 }
 
 .reminder-strip.is-updated {
-  animation: reminderPulse 0.65s ease-out;
+  animation: reminderPulse 0.75s ease-out;
 }
 
 @keyframes reminderPulse {
   from {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
   }
   to {
-    box-shadow: 0 0 0 14px transparent;
+    box-shadow: 0 0 0 16px transparent;
+  }
+}
+
+.ui-text-leave {
+  opacity: 0.2;
+  transform: translateY(4px);
+  transition: opacity 0.17s ease, transform 0.17s ease;
+}
+
+.ui-text-enter {
+  animation: uiTextReveal 0.55s ease forwards;
+}
+
+@keyframes uiTextReveal {
+  from {
+    opacity: 0.4;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -594,6 +659,7 @@ button:focus-visible,
 .flow-text {
   margin: 0;
   line-height: 1.58;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .holiday-tier {
@@ -830,6 +896,187 @@ button:focus-visible,
   color: var(--muted);
 }
 
+/* -----------------------------------------------------------------------------
+   Атмосфера погоды: слой между фоном и контентом (деликатные эффекты)
+   ----------------------------------------------------------------------------- */
+.weather-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.weather-atmosphere__flakes {
+  position: absolute;
+  inset: 0;
+}
+
+/* Дождь: едва заметные «жилки», холодный оттенок на общем оверлее */
+.weather-atmosphere--rain::before {
+  content: "";
+  position: absolute;
+  inset: -5% 0 0 0;
+  opacity: 0.35;
+  background-image: repeating-linear-gradient(
+    102deg,
+    transparent,
+    transparent 11px,
+    rgba(255, 255, 255, 0.045) 11px,
+    rgba(255, 255, 255, 0.045) 11.5px
+  );
+  animation: weatherRainFall 0.7s linear infinite;
+}
+
+@keyframes weatherRainFall {
+  to {
+    transform: translateY(14px);
+  }
+}
+
+body[data-weather-fx="rain"]::after {
+  background: linear-gradient(
+    165deg,
+    rgba(228, 236, 244, 0.42) 0%,
+    rgba(232, 236, 240, 0.28) 45%,
+    rgba(226, 232, 236, 0.22) 100%
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  body[data-weather-fx="rain"]::after {
+    background: linear-gradient(
+      165deg,
+      rgba(16, 22, 28, 0.55) 0%,
+      rgba(14, 18, 22, 0.42) 50%,
+      rgba(12, 16, 20, 0.38) 100%
+    );
+  }
+}
+
+/* Снег: мягкие размытые частицы */
+.weather-flake {
+  position: absolute;
+  top: -8vh;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+  filter: blur(1.1px);
+  opacity: 0;
+  animation-name: weatherFlakeDrift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes weatherFlakeDrift {
+  0% {
+    transform: translate3d(0, -5vh, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.55;
+  }
+  85% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate3d(var(--flake-drift, 0px), 108vh, 0);
+    opacity: 0;
+  }
+}
+
+/* Солнце: тёплое свечение и лёгкий «блик» */
+.weather-atmosphere--sun::before {
+  content: "";
+  position: absolute;
+  inset: -18% -10% 0 -10%;
+  background:
+    radial-gradient(ellipse 85vh 58vh at 78% -5%, rgba(255, 228, 195, 0.26), transparent 54%),
+    radial-gradient(ellipse 55vh 40vh at 88% 4%, rgba(255, 244, 220, 0.14), transparent 50%);
+  animation: weatherSunBreath 12s ease-in-out infinite alternate;
+}
+
+.weather-atmosphere--sun::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 38vmin at 86% 6%, rgba(255, 255, 255, 0.1), transparent 42%);
+  mix-blend-mode: soft-light;
+  opacity: 0.75;
+}
+
+@keyframes weatherSunBreath {
+  from {
+    opacity: 0.88;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+body[data-weather-fx="sun"]::after {
+  background: linear-gradient(
+    165deg,
+    rgba(255, 252, 244, 0.38) 0%,
+    rgba(252, 244, 232, 0.26) 48%,
+    rgba(248, 242, 234, 0.2) 100%
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  body[data-weather-fx="sun"]::after {
+    background: linear-gradient(
+      165deg,
+      rgba(36, 32, 26, 0.42) 0%,
+      rgba(28, 26, 22, 0.32) 100%
+    );
+  }
+}
+
+/* Пасмурно / туман: матовость и чуть сильнее стекло */
+body[data-weather-fx="cloud"]::after {
+  background: linear-gradient(
+    165deg,
+    rgba(236, 236, 238, 0.48) 0%,
+    rgba(228, 230, 232, 0.38) 50%,
+    rgba(224, 226, 228, 0.32) 100%
+  );
+}
+
+body[data-weather-fx="cloud"] .wrap {
+  backdrop-filter: blur(28px) saturate(0.9);
+  -webkit-backdrop-filter: blur(28px) saturate(0.9);
+  filter: contrast(0.96) saturate(0.94);
+}
+
+@media (prefers-color-scheme: dark) {
+  body[data-weather-fx="cloud"]::after {
+    background: linear-gradient(
+      165deg,
+      rgba(18, 20, 22, 0.58) 0%,
+      rgba(14, 16, 18, 0.48) 100%
+    );
+  }
+
+  body[data-weather-fx="cloud"] .wrap {
+    filter: contrast(0.94) saturate(0.88);
+  }
+}
+
+/* Ветер: едва уловимый сдвиг фонового слоя (без второго движения — не дублируем эффект) */
+body[data-weather-wind="1"]::before {
+  animation: weatherBgSway 18s ease-in-out infinite alternate;
+}
+
+@keyframes weatherBgSway {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(4px, -3px, 0) scale(1.008);
+  }
+}
+
 @media (max-width: 700px) {
   .wrap {
     margin: 0 12px;
@@ -860,6 +1107,10 @@ button:focus-visible,
     animation: none;
   }
 
+  .ui-text-enter {
+    animation: none;
+  }
+
   .weather-summary {
     transition: none;
   }
@@ -872,5 +1123,16 @@ button:focus-visible,
 
   body::before {
     transition: none;
+    animation: none !important;
+  }
+
+  .weather-atmosphere--rain::before,
+  .weather-atmosphere--sun::before,
+  .weather-flake {
+    animation: none !important;
+  }
+
+  body[data-weather-wind="1"]::before {
+    animation: none !important;
   }
 }
