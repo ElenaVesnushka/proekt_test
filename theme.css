@@ -897,12 +897,12 @@ button:focus-visible,
 }
 
 /* -----------------------------------------------------------------------------
-   Атмосфера погоды: слой между фоном и контентом (деликатные эффекты)
+   Атмосфера погоды: слой поверх карточек, под FAB (z-index выше .wrap)
    ----------------------------------------------------------------------------- */
 .weather-atmosphere {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: 12;
   pointer-events: none;
   overflow: hidden;
 }
@@ -917,7 +917,7 @@ button:focus-visible,
   content: "";
   position: absolute;
   inset: -5% 0 0 0;
-  opacity: 0.35;
+  opacity: 0.52;
   background-image: repeating-linear-gradient(
     102deg,
     transparent,
