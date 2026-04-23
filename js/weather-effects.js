@@ -7,7 +7,7 @@
   "use strict";
 
   var WR = global.WeatherReminders;
-  var FLAKE_COUNT = 16;
+  var FLAKE_COUNT = 28;
   var atmosphereEl = null;
   var flakesHost = null;
 
@@ -69,10 +69,13 @@
    * Определяет основной визуальный режим и усиление ветра (дополнительно к дождю/снегу и т.д.).
    */
   function resolveModes(weather) {
-    if (!WR || !weather || typeof weather.weatherCode !== "number") {
+    if (!WR || !weather || typeof weather !== "object") {
       return { fx: "clear", windExtra: false };
     }
-    var code = weather.weatherCode;
+    var code = Number(weather.weatherCode);
+    if (!Number.isFinite(code)) {
+      return { fx: "clear", windExtra: false };
+    }
     var wind = Number(weather.windKmh) || 0;
     var cat = WR.mapWeatherToCategory(weather);
 

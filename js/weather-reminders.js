@@ -115,8 +115,14 @@
    * { tempMax: number, weatherCode: number, windKmh: number, precipMm: number }
    */
   function mapWeatherToCategory(w) {
-    var code = w.weatherCode;
-    var t = w.tempMax;
+    var code = Number(w.weatherCode);
+    if (!Number.isFinite(code)) {
+      code = -1;
+    }
+    var t = Number(w.tempMax);
+    if (!Number.isFinite(t)) {
+      t = 15;
+    }
     var wind = w.windKmh;
     var p = w.precipMm || 0;
 

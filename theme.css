@@ -912,25 +912,25 @@ button:focus-visible,
   inset: 0;
 }
 
-/* Дождь: едва заметные «жилки», холодный оттенок на общем оверлее */
+/* Дождь: заметные на светлом стекле полосы (раньше были почти невидимы) */
 .weather-atmosphere--rain::before {
   content: "";
   position: absolute;
   inset: -5% 0 0 0;
-  opacity: 0.52;
+  opacity: 0.92;
   background-image: repeating-linear-gradient(
     102deg,
     transparent,
-    transparent 11px,
-    rgba(255, 255, 255, 0.045) 11px,
-    rgba(255, 255, 255, 0.045) 11.5px
+    transparent 7px,
+    rgba(72, 98, 128, 0.14) 7px,
+    rgba(72, 98, 128, 0.22) 7.6px
   );
-  animation: weatherRainFall 0.7s linear infinite;
+  animation: weatherRainFall 0.55s linear infinite;
 }
 
 @keyframes weatherRainFall {
   to {
-    transform: translateY(14px);
+    transform: translateY(22px);
   }
 }
 
@@ -959,9 +959,9 @@ body[data-weather-fx="rain"]::after {
   position: absolute;
   top: -8vh;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
-  filter: blur(1.1px);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.55);
+  filter: blur(0.9px);
   opacity: 0;
   animation-name: weatherFlakeDrift;
   animation-timing-function: linear;
@@ -974,10 +974,10 @@ body[data-weather-fx="rain"]::after {
     opacity: 0;
   }
   8% {
-    opacity: 0.55;
+    opacity: 0.88;
   }
   85% {
-    opacity: 0.4;
+    opacity: 0.65;
   }
   100% {
     transform: translate3d(var(--flake-drift, 0px), 108vh, 0);
@@ -990,9 +990,10 @@ body[data-weather-fx="rain"]::after {
   content: "";
   position: absolute;
   inset: -18% -10% 0 -10%;
+  transform-origin: 80% 0%;
   background:
-    radial-gradient(ellipse 85vh 58vh at 78% -5%, rgba(255, 228, 195, 0.26), transparent 54%),
-    radial-gradient(ellipse 55vh 40vh at 88% 4%, rgba(255, 244, 220, 0.14), transparent 50%);
+    radial-gradient(ellipse 85vh 58vh at 78% -5%, rgba(255, 210, 160, 0.38), transparent 52%),
+    radial-gradient(ellipse 55vh 40vh at 88% 4%, rgba(255, 236, 200, 0.22), transparent 48%);
   animation: weatherSunBreath 12s ease-in-out infinite alternate;
 }
 
@@ -1007,10 +1008,12 @@ body[data-weather-fx="rain"]::after {
 
 @keyframes weatherSunBreath {
   from {
-    opacity: 0.88;
+    opacity: 0.62;
+    transform: scale(1);
   }
   to {
-    opacity: 1;
+    opacity: 0.98;
+    transform: scale(1.03);
   }
 }
 
@@ -1073,7 +1076,7 @@ body[data-weather-wind="1"]::before {
     transform: translate3d(0, 0, 0) scale(1);
   }
   100% {
-    transform: translate3d(4px, -3px, 0) scale(1.008);
+    transform: translate3d(10px, -8px, 0) scale(1.02);
   }
 }
 
